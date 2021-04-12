@@ -14,8 +14,6 @@ import win32api
 from ctypes import windll
 import ctypes
 import pyautogui
-import d3dshot
-from PIL import Image
 
 
 PUL = ctypes.POINTER(ctypes.c_ulong)
@@ -49,14 +47,15 @@ class Input(ctypes.Structure):
                 ("ii", Input_I)]
 
 
-class Detect:
+class Aimbot:
     def __init__(self):
-        screen = mss.mss()
+        self.aimbot_status = colored("ENABLED", 'green')
+        self.screen = mss.mss()
         os.chdir("lib")
-        self.half_screen_width = screen.monitors[1]["width"] / 2
-        self.half_screen_height = screen.monitors[1]["height"] / 2
+        self.half_screen_width = self.screen.monitors[1]["width"] / 2
+        self.half_screen_height = self.screen.monitors[1]["height"] / 2
 
-         #this controls the initial box width and height
+        #this controls the initial box width and height of the Lunar Vision window
         self.centered_box_constant = 200
 
         #You can change these offsets
@@ -64,25 +63,49 @@ class Detect:
                               int(self.half_screen_height - self.centered_box_constant/2 - 110), #this controls height of box up
                               int(self.half_screen_width + self.centered_box_constant/2 + 150),  #width of the box
                               int(self.half_screen_height + self.centered_box_constant/2 + 110)) #this controls height of box down
-
-        self.model = torch.hub.load('ultralytics/yolov5', 'custom', path_or_model='weights/yolov5s6.pt', force_reload=True)
-        self.model.to("cuda")
+        print("[INFO] Loading the neural network model")
+        self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s6')
+        if torch.cuda.is_available():
+            print(colored("CUDA ACCELERATION [ENABLED]", "green"))
+        else:
+            print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
+            print(colored("[!] Check your pytorch installation, else performance will be very poor", "red"))
         self.model.conf = 0.4  # confidence threshold (0-1)
         self.model.iou = 0.45  # NMS IoU threshold (0-1)
         self.model.classes = [0] #only include the person class
-        self.screen_capture = d3dshot.create(capture_output="numpy")
-        self.screen_capture.capture(region = self.detection_box)
         time.sleep(1)
+        print("\n[INFO] PRESS 'F1' TO TOGGLE AIMBOT\n[INFO] PRESS 'ESCAPE' TO QUIT")
 
-    def detect_screen(self):
-        x = 0
+    def update_status_aimbot(self):
+        if self.aimbot_status == colored("ENABLED", 'green'):
+            self.aimbot_status = colored("DISABLED", 'red')
+        else:
+            self.aimbot_status = colored("ENABLED", 'green')
+        sys.stdout.write("\033[K")
+        print(f"[!] AIMBOT IS [{self.aimbot_status}]", end = "\r")
+
+    def start(self):
+        print("[INFO] Beginning screen capture")
+
+        Aimbot.update_status_aimbot(self)
+
         while True:
-            frame = self.screen_capture.get_latest_frame()
-            x += 1
-            print(f"frame: {x}")
-            results = self.model(frame)
-            results.print()
+            last_time = time.time()
 
+            frame = np.array(self.screen.grab(self.detection_box))
+
+
+            results = self.model(frame)
+            if len(results.xyxy[0]) != 0:
+                #to be implemented
+
+
+
+            cv2.putText(frame, f"FPS {1 // (time.time() - last_time)}", (5, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 4)
+            cv2.imshow('Lunar Vision', frame)
+
+            if cv2.waitKey(1) & 0xFF == ord('0'):
+                break
 
 
     #This uses relative direct input since that is what Fortnite and other FPS games accept
@@ -93,11 +116,10 @@ class Detect:
         command = Input(ctypes.c_ulong(0), ii_)
         ctypes.windll.user32.SendInput(1, ctypes.pointer(command), ctypes.sizeof(command))
 
-
-
-
-
-
-
+    def clean_up(self):
+        print("\n[INFO] ESCAPE WAS PRESSED. QUITTING...")
+        self.screen.close()
+        cv2.destroyAllWindows()
+        os._exit(1)
 
 if __name__ == "__main__": print("You are in the wrong directory and are running the wrong file; you must run lunar.py")
