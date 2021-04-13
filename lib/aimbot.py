@@ -10,11 +10,10 @@ import os
 import signal
 import sys
 import torch
-import win32gui, win32ui, win32con, win32api
+import win32api
 from ctypes import windll
 import ctypes
 import pyautogui
-
 
 PUL = ctypes.POINTER(ctypes.c_ulong)
 class KeyBdInput(ctypes.Structure):
@@ -56,13 +55,13 @@ class Aimbot:
         self.half_screen_height = self.screen.monitors[1]["height"] / 2
 
         #this controls the initial box width and height of the Lunar Vision window
-        self.centered_box_constant = 200
+        self.centered_box_constant = 300
 
         #You can change these offsets
-        self.detection_box = (int(self.half_screen_width - self.centered_box_constant/2 + 75),  #x coord
-                              int(self.half_screen_height - self.centered_box_constant/2 - 200), #y coord
-                              int(self.half_screen_width + self.centered_box_constant/2 + 200),  #width of the box
-                              int(self.half_screen_height + self.centered_box_constant/2 + 200)) #height of the box
+        self.detection_box = (int(self.half_screen_width - self.centered_box_constant/2 + 50),  #x coord
+                              int(self.half_screen_height - self.centered_box_constant/2 - 50), #y coord
+                              int(self.half_screen_width + self.centered_box_constant/2 ),  #width of the box
+                              int(self.half_screen_height + self.centered_box_constant/2)) #height of the box
         print("[INFO] Loading the neural network model")
         self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s6')
         if torch.cuda.is_available():
@@ -98,7 +97,6 @@ class Aimbot:
         print("[INFO] Beginning screen capture")
 
         Aimbot.update_status_aimbot(self)
-        dc = windll.user32.GetDC(0)
 
         while True:
             last_time = time.time()
@@ -129,10 +127,6 @@ class Aimbot:
 
                     absX, absY = headX + self.detection_box[0], headY + self.detection_box[1]
                     Aimbot.move_crosshair(self, absX, absY)
-
-
-                    #if windll.gdi32.GetPixel(dc, 1563, 953) != 16777215: #checks the pixel val to see if the pickaxe is not selected
-                        #Aimbot.move_crosshair(self, absX, absY)
 
 
             cv2.putText(frame, f"FPS {1 // (time.time() - last_time)}", (5, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
