@@ -23,10 +23,10 @@ pip3 install -r requirements.txt
 ```
 python lunar.py
 ```
-## Future Developments
+## Future Updates
 - Train a custom model to detect players with a greater mAP than the YOLOv5s default person detection.
 - Explore combining real-time object detection with pixel color tracking
-- Smooth, natural player tracking
+- Implement smooth, natural player tracking (bezier curve)
 
 
 ## Contributing
