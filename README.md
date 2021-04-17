@@ -30,4 +30,4 @@ python lunar.py
 
 
 ## Contributing
-Pull requests, suggestions, or issue/bug reports are welcome. If you have any of those, please open an [issue](https://github.com/zeyad-mansour/Lunar/issues) and provide some detail.
+If you have any suggestions or find any issues, please open an [issue](https://github.com/zeyad-mansour/Lunar/issues) and provide some detail.
