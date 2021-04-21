@@ -62,10 +62,10 @@ class Aimbot:
         self.centered_box_constant = 300
 
         #You can change these offsets
-        self.detection_box = (int(self.half_screen_width - self.centered_box_constant/16),  #x1 coord
-                              int(self.half_screen_height - self.centered_box_constant/2), #y1 coord
-                              int(self.half_screen_width + self.centered_box_constant/2),  #x2 coord
-                              int(self.half_screen_height + self.centered_box_constant/2)) #y2 coord
+        self.detection_box = (int(self.half_screen_width - self.centered_box_constant/8),  #x1 coord
+                              int(self.half_screen_height - self.centered_box_constant), #y1 coord
+                              int(self.half_screen_width + self.centered_box_constant),  #x2 coord
+                              int(self.half_screen_height + self.centered_box_constant)) #y2 coord
         print("[INFO] Loading the neural network model")
         self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', force_reload = True)
         if torch.cuda.is_available():
@@ -74,7 +74,7 @@ class Aimbot:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
             print(colored("[!] Check your pytorch installation, else performance will be very poor", "red"))
 
-        self.model.conf = 0.35   # confidence threshold (or base detection (0-1)
+        self.model.conf = 0.6   # confidence threshold (or base detection (0-1)
 
         self.model.iou = 0.45 # NMS IoU (0-1)
 
@@ -91,7 +91,7 @@ class Aimbot:
         print(f"[!] AIMBOT IS [{self.aimbot_status}]", end = "\r")
 
     #This uses relative direct input since that is what Fortnite and other FPS games accept
-    def move_crosshair(self, x, y):
+    def move_crosshair(self, x, y, conf):
         x = int(x - self.half_screen_width)
         y = int(y - self.half_screen_height)
         extra = ctypes.c_ulong(0)
@@ -100,7 +100,13 @@ class Aimbot:
         ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(extra))
         command = Input(ctypes.c_ulong(0), ii_)
         ctypes.windll.user32.SendInput(1, ctypes.pointer(command), ctypes.sizeof(command))
+        #autofire if left mouse is up
 
+
+        if win32api.GetKeyState(0x01) >= 0 and conf > 0.7:
+            ctypes.windll.user32.mouse_event(0x0002)
+            time.sleep(0.0001)
+            ctypes.windll.user32.mouse_event(0x0004)
 
     def start(self):
         print("[INFO] Beginning screen capture")
@@ -112,7 +118,7 @@ class Aimbot:
             last_time = time.time()
 
             frame = np.array(self.screen.grab(self.detection_box))
-            cv2.rectangle(frame, (0, self.centered_box_constant//2), (self.centered_box_constant//16, self.centered_box_constant * 2), (0, 0, 0), -1) #draw box over own player
+            cv2.rectangle(frame, (0, self.centered_box_constant//2), (self.centered_box_constant//8, self.centered_box_constant * 2), (0, 0, 0), -1) #draw box over own player
             results = self.model(frame)
 
             if len(results.xyxy[0]) != 0: #person detected
@@ -141,7 +147,7 @@ class Aimbot:
                     #checks the pixel val to see if the pickaxe is not selected
                     #this pixel val is Fortnite specific to 1920x1080 resolution at 75% HUD; it would need to be modified for any other configuration
                     if ctypes.windll.gdi32.GetPixel(dc, 1563, 953) != 16777215: #checks the pixel val to see if the pickaxe is not selected
-                        Aimbot.move_crosshair(self, absX, absY)
+                        Aimbot.move_crosshair(self, absX, absY, best_conf)
 
 
             cv2.putText(frame, f"FPS: {int(1 / (time.time() - last_time))}", (5, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
