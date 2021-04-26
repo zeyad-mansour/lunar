@@ -1,6 +1,8 @@
 # Lunar 🌕
 Lunar is a neural network aimbot that uses real-time object detection accelerated with CUDA on Nvidia GPUs.
 
+Note: This project is very much under development, but right now, i'm putting it on the back burner due to other obligations that I have.
+
 ## About
 
 Lunar can be modified to work with a variety of FPS games; however, it is currently configured for Fortnite. Besides being easy-to-use, the main benefit of Lunar is that it is virtually undetectable by anti-cheat software (no memory is meddled with).
