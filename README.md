@@ -34,4 +34,4 @@ python lunar.py
 ## Contributing
 If you have any suggestions or find any issues, please open an [issue](https://github.com/zeyad-mansour/Lunar/issues) and provide some detail.
 
-If you'd like to contribute by donating, you can do that [here](https://www.zeyadmansour.com/info.txt) :) 
+If you'd like to contribute by donating, that would be much appreciated, and you can do that [here](https://www.zeyadmansour.com/info.txt) :) 
