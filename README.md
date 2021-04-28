@@ -27,7 +27,7 @@ python lunar.py
 ```
 ## Future Updates
 - Train a custom model to detect players with a greater mAP than the YOLOv5s default person detection.
-- Explore combining real-time object detection with pixel color tracking
+- Explore combining real-time object detection with k-means pixel clustering
 - Implement smooth, natural player tracking (bezier curve)
 
 
