@@ -121,7 +121,7 @@ class Aimbot:
                 for *box, conf, cls in results.xyxy[0]: #iterate over each person detected
                     x1y1 = tuple(box[:2])
                     x2y2 = tuple(box[2:])
-                    cv2.rectangle(frame, x1y1, x2y2, color=[0, 0, 255], thickness=2) #draw the bounding boxes
+                    cv2.rectangle(frame, x1y1, x2y2, [0, 0, 255], thickness=2) #draw the bounding boxes
                     cv2.putText(frame, f"{int(conf * 100)}%", x1y1,cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2) #draw the confidence labels on the bounding boxes
 
                     # object detections are automatically ordered from greatest to least confidence
