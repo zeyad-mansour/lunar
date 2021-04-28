@@ -34,7 +34,6 @@ pycocotools>=2.0  # COCO mAP
 
 termcolor
 pywin32
-ctypes
 mss
 timeit
 d3dshot
