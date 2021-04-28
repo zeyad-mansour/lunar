@@ -11,8 +11,7 @@ import signal
 import sys
 import torch
 import win32api
-import pyautogui
-import subprocess
+import threading
 import ctypes
 
 PUL = ctypes.POINTER(ctypes.c_ulong)
@@ -74,7 +73,7 @@ class Aimbot:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
             print(colored("[!] Check your pytorch installation, else performance will be very poor", "red"))
 
-        self.model.conf = 0.6   # confidence threshold (or base detection (0-1)
+        self.model.conf = 0.5   # confidence threshold (or base detection (0-1)
 
         self.model.iou = 0.45 # NMS IoU (0-1)
 
@@ -96,17 +95,13 @@ class Aimbot:
         y = int(y - self.half_screen_height)
         extra = ctypes.c_ulong(0)
         ii_ = Input_I()
-        ii_.mi.time = 0
         ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(extra))
         command = Input(ctypes.c_ulong(0), ii_)
-        ctypes.windll.user32.SendInput(1, ctypes.pointer(command), ctypes.sizeof(command))
+        ctypes.windll.user32.SendInput(1, ctypes.byref(command), ctypes.sizeof(command))
         #autofire if left mouse is up
-
-
-        if win32api.GetKeyState(0x01) >= 0 and conf > 0.7:
-            ctypes.windll.user32.mouse_event(0x0002)
-            time.sleep(0.0001)
-            ctypes.windll.user32.mouse_event(0x0004)
+        #if win32api.GetKeyState(0x01) >= 0 and conf > 0.7:
+        #    ctypes.windll.user32.mouse_event(0x0002)
+        #    ctypes.windll.user32.mouse_event(0x0004)
 
     def start(self):
         print("[INFO] Beginning screen capture")
@@ -118,12 +113,12 @@ class Aimbot:
             last_time = time.time()
 
             frame = np.array(self.screen.grab(self.detection_box))
-            cv2.rectangle(frame, (0, self.centered_box_constant//2), (self.centered_box_constant//8, self.centered_box_constant * 2), (0, 0, 0), -1) #draw box over own player
+            cv2.rectangle(frame, (0, self.centered_box_constant), (self.centered_box_constant//8, self.centered_box_constant * 2), (0, 0, 0), -1) #draw box over own player
             results = self.model(frame)
 
             if len(results.xyxy[0]) != 0: #person detected
                 run = True
-                for *box, conf, cls in results.xyxy[0]:
+                for *box, conf, cls in results.xyxy[0]: #iterate over each person detected
                     x1y1 = tuple(box[:2])
                     x2y2 = tuple(box[2:])
                     cv2.rectangle(frame, x1y1, x2y2, color=[0, 0, 255], thickness=2) #draw the bounding boxes
@@ -135,14 +130,16 @@ class Aimbot:
                         x1, y1, x2, y2, best_conf = x1y1[0].item(), x1y1[1].item(), x2y2[0].item(), x2y2[1].item(), conf.item()
                         run = False
 
-                #get proper coordinates and move the mouse if aimbot enabled
+                #move the mouse if aimbot enabled and crosshair is not already on the target
+
+                height = y2 - y1
+                headX, headY = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.5) #offset to roughly approximate the head using a ratio of the height
+
+                cv2.circle(frame, (headX, headY), 6, (0, 255, 0), -1)
+
+                absX, absY = headX + self.detection_box[0], headY + self.detection_box[1]
+
                 if self.aimbot_status == colored("ENABLED", 'green'):
-                    height = y2 - y1
-                    headX, headY = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.5) #offset to roughly approximate the head using a ratio of the height
-
-                    cv2.circle(frame, (headX, headY), 6, (0, 255, 0), -1)
-
-                    absX, absY = headX + self.detection_box[0], headY + self.detection_box[1]
 
                     #checks the pixel val to see if the pickaxe is not selected
                     #this pixel val is Fortnite specific to 1920x1080 resolution at 75% HUD; it would need to be modified for any other configuration
@@ -150,12 +147,11 @@ class Aimbot:
                         Aimbot.move_crosshair(self, absX, absY, best_conf)
 
 
-            cv2.putText(frame, f"FPS: {int(1 / (time.time() - last_time))}", (5, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv2.putText(frame, f"FPS: {int(2 / (time.time() - last_time))}", (5, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             cv2.imshow("Lunar Vision", frame)
 
             if cv2.waitKey(1) & 0xFF == ord('0'):
                 break
-
 
     def clean_up(self):
         print("\n[INFO] F2 WAS PRESSED. QUITTING...")
