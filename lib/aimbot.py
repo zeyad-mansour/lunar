@@ -147,7 +147,7 @@ class Aimbot:
                         Aimbot.move_crosshair(self, absX, absY, best_conf)
 
 
-            cv2.putText(frame, f"FPS: {int(2 / (time.time() - last_time))}", (5, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv2.putText(frame, f"FPS: {int((time.time() - last_time))}", (5, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             cv2.imshow("Lunar Vision", frame)
 
             if cv2.waitKey(1) & 0xFF == ord('0'):
