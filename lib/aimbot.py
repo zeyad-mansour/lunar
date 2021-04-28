@@ -130,8 +130,6 @@ class Aimbot:
                         x1, y1, x2, y2, best_conf = x1y1[0].item(), x1y1[1].item(), x2y2[0].item(), x2y2[1].item(), conf.item()
                         run = False
 
-                #move the mouse if aimbot enabled and crosshair is not already on the target
-
                 height = y2 - y1
                 headX, headY = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.5) #offset to roughly approximate the head using a ratio of the height
 
