@@ -7,7 +7,9 @@ Note: This project is very much under development, but right now, i'm putting it
 
 Lunar can be modified to work with a variety of FPS games; however, it is currently configured for Fortnite. Besides being easy-to-use, the main benefit of Lunar is that it is virtually undetectable by anti-cheat software (no memory is meddled with).
 
-The basis of Lunar's player detection is the [YOLOv5](https://github.com/ultralytics/yolov5) architecture written in the PyTorch framework.
+The basis of Lunar's player detection is the [YOLOv5](https://github.com/ultralytics/yolov5) architecture written in the PyTorch framework
+
+https://user-images.githubusercontent.com/45726273/116477665-eb14fe80-a84a-11eb-9a14-7b413d2933d7.mp4
 
 ## Installation
 
