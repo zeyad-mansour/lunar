@@ -35,4 +35,3 @@ pycocotools>=2.0  # COCO mAP
 termcolor
 pywin32
 mss
-timeit
