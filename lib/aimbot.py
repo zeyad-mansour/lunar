@@ -1,18 +1,14 @@
-import numpy as np
-from termcolor import colored
-import timeit
-import _thread
-import imutils
-import time
-import mss
+import ctypes
 import cv2
+import mss
+import numpy as np
 import os
-import signal
 import sys
+import time
+import timeit
 import torch
 import win32api
-import threading
-import ctypes
+from termcolor import colored
 
 PUL = ctypes.POINTER(ctypes.c_ulong)
 
@@ -99,9 +95,9 @@ class Aimbot:
         command = Input(ctypes.c_ulong(0), ii_)
         ctypes.windll.user32.SendInput(1, ctypes.byref(command), ctypes.sizeof(command))
         #autofire if left mouse is up
-        #if win32api.GetKeyState(0x01) >= 0 and conf > 0.7:
-        #    ctypes.windll.user32.mouse_event(0x0002)
-        #    ctypes.windll.user32.mouse_event(0x0004)
+        if win32api.GetKeyState(0x01) >= 0:
+            ctypes.windll.user32.mouse_event(0x0002)
+            ctypes.windll.user32.mouse_event(0x0004)
 
     def start(self):
         print("[INFO] Beginning screen capture")
@@ -122,7 +118,7 @@ class Aimbot:
                     x1y1 = tuple(box[:2])
                     x2y2 = tuple(box[2:])
                     cv2.rectangle(frame, x1y1, x2y2, [0, 0, 255], 2) #draw the bounding boxes
-                    cv2.putText(frame, f"{int(conf * 100)}%", x1y1,cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2) #draw the confidence labels on the bounding boxes
+                    cv2.putText(frame, f"{int(conf * 100)}%", x1y1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2) #draw the confidence labels on the bounding boxes
 
                     # object detections are automatically ordered from greatest to least confidence
                     # best detection variables are assigned only once at the beginning of the loop
