@@ -95,9 +95,9 @@ class Aimbot:
         command = Input(ctypes.c_ulong(0), ii_)
         ctypes.windll.user32.SendInput(1, ctypes.byref(command), ctypes.sizeof(command))
         #autofire if left mouse is up
-        if win32api.GetKeyState(0x01) >= 0:
-            ctypes.windll.user32.mouse_event(0x0002)
-            ctypes.windll.user32.mouse_event(0x0004)
+        #if win32api.GetKeyState(0x01) >= 0:
+        #    ctypes.windll.user32.mouse_event(0x0002)
+        #    ctypes.windll.user32.mouse_event(0x0004)
 
     def start(self):
         print("[INFO] Beginning screen capture")
