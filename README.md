@@ -28,7 +28,8 @@ pip3 install -r requirements.txt
 python lunar.py
 ```
 ## Future Updates
-- Train a custom model to detect players with a greater mAP than the YOLOv5s default person detection.
+- Use TensorRT for faster inference.
+- Train a custom model to detect players better than the YOLOv5s person detection.
 - Explore combining real-time object detection with k-means pixel clustering
 - Implement smooth, natural player tracking (bezier curve)
 
