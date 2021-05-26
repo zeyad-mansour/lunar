@@ -13,7 +13,7 @@ https://user-images.githubusercontent.com/45726273/116477665-eb14fe80-a84a-11eb-
 
 ## Installation
 
-1. Install [Python](https://www.python.org/downloads/) 3.8 or later
+1. Install a version of [Python](https://www.python.org/downloads/) 3.7
 
 
 2. Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the necessary dependencies.
