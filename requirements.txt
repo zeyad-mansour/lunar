@@ -1,10 +1,23 @@
 --find-links https://download.pytorch.org/whl/torch_stable.html
 
+torch==1.8.1+cu111
+torchvision==0.9.1+cu111
+
+matplotlib>=3.2.2
 numpy>=1.18.5
 opencv-python>=4.1.2
-torch==1.8.1+cu111
-torchvision==0.9.1+cu111 
-torchaudio===0.8.1 
+Pillow
+PyYAML>=5.3.1
+scipy>=1.4.1
+tqdm>=4.41.0
+tensorboard>=2.4.1
+seaborn>=0.11.0
+pandas
 
-termcolor
+mss
 pywin32
+pynput
+requests
+wheel
+termcolor
+

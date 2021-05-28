@@ -1,14 +1,13 @@
+import argparse
+import json
+import msvcrt
 import os
 import sys
-import msvcrt
 import threading
 
 from lib.aimbot import Aimbot
 from pynput import keyboard
 from termcolor import colored
-
-# CLI input:
-#python lunar.py
 
 
 def on_release(key):
@@ -22,11 +21,38 @@ def on_release(key):
 
 def main():
     global lunar
+    os.chdir("lib")
     lunar = Aimbot()
     lunar.start()
 
-if __name__ == "__main__":
+def setup():
+    path = "lib/config"
+    if not os.path.exists(path):
+        os.makedirs(path)
 
+    print("[INFO] Lowering your in-game sensitivity while increasing your cursor speed (or mouse DPI) allows for the aimbot to track more accurately. It is suggested that you set your in-game sensitivity to 4.0 % or lower (better).")
+    print("[INFO] In-game X and Y axis sensitivity should be the same.")
+    def prompt(str):
+        valid_input = False
+        while not valid_input:
+            try:
+                number = float(input(str))
+                valid_input = True
+            except ValueError:
+                print("[!] Invalid Input. Make sure to enter only the number (e.g. 6.9)")
+        return number
+
+    xy_sens = prompt("X-Axis and Y-Axis Sensitivity (from in-game settings): ")
+    targeting_sens = prompt("Targeting Sensitivity (from in-game settings): ")
+
+    print("[INFO] Your in-game targeting sensitivity must be the same as your scoping sensitivity.")
+    sensitivity_settings = {"xy_sens": xy_sens, "targeting_sens": targeting_sens}
+
+    with open('lib/config/config.json', 'w') as outfile:
+        json.dump(sensitivity_settings, outfile)
+    print("[INFO] Sensitivity configuration complete")
+
+if __name__ == "__main__":
     os.system('cls' if os.name == 'nt' else 'clear')
 
     print(colored('''
@@ -38,6 +64,11 @@ if __name__ == "__main__":
 
     (Neural-Network Aimbot)''', "yellow"))
 
+    if len(sys.argv) > 1 and sys.argv[1] == "setup":
+        setup()
+    elif not os.path.exists("lib/config/config.json"):
+        print("[!] Sensitivity configuration is not set")
+        setup()
     listener = keyboard.Listener(on_release=on_release)
     listener.start()
     main()
