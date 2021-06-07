@@ -5,15 +5,15 @@ Lunar is a neural network aimbot that uses real-time object detection accelerate
 
 Lunar can be modified to work with a variety of FPS games; however, it is currently configured for Fortnite. Besides being general purpose, the main advantage of using Lunar is that it is virtually undetectable by anti-cheat software (no memory is meddled with).
 
-The basis of Lunar's player detection is the [YOLOv5](https://github.com/ultralytics/yolov5) architecture written in the PyTorch framework
+The basis of Lunar's player detection is the [YOLOv5](https://github.com/ultralytics/yolov5) architecture written in the PyTorch framework.
 
 https://user-images.githubusercontent.com/45726273/116477665-eb14fe80-a84a-11eb-9a14-7b413d2933d7.mp4
 
 ## Installation
 
-1. Install a version of [Python](https://www.python.org/downloads/) 3.8 or later
+1. Install a version of [Python](https://www.python.org/downloads/) 3.8 or later.
 
-2. Navigate to the root directory. Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the necessary dependencies
+2. Navigate to the root directory. Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the necessary dependencies.
 
 ```
 pip install -r requirements.txt
@@ -28,10 +28,13 @@ To update sensitivity settings:
 python lunar.py setup
 ```
 
-###### Note:
-- the game should be played at a 1920 x 1080 resolution
-- the HUD scale should be set to 75%
-- it is highly recommended that in-game sensitivity is low
+## Required in-game settings:
+- 1920 x 1080 resolution
+- 75% HUD scale
+- <details>
+  <summary>Sensitivity</summary>
+  Be weary of using a very low in-game sensitivity. This will slow down the aiming (not including the mouse_delay constant). For example, an x and y axis sensitivity of 1.0 can take about 20 miliseconds to move 300 pixels in the game. However, with an in-game sensitivity of 5 or 10, the process time is negligible.
+  </details>
 
 ## Future Updates
 - Use TensorRT for faster inference
@@ -41,4 +44,4 @@ python lunar.py setup
 
 ## Contributing
 Pull requests are welcome. If you have any suggestions, questions, or find any issues, please open an [issue](https://github.com/zeyad-mansour/Lunar/issues) and provide some detail.
-If you find this project interesting or helpful, please star the repository!
+If you find this project interesting or helpful, please star the repository.
