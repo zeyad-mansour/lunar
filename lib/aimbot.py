@@ -71,7 +71,7 @@ class Aimbot:
         else:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
             print(colored("[!] Check your PyTorch installation, else performance will be poor", "red"))
-        self.model.conf = 0.48  # confidence threshold (or base detection (0-1)
+        self.model.conf = 0.35  # confidence threshold (or base detection (0-1)
         self.model.iou = 0.45 # NMS IoU (0-1)
         self.model.classes = [0] #only include the person class
         self.current_detection = None
@@ -90,16 +90,25 @@ class Aimbot:
         print(f"[!] AIMBOT IS [{self.aimbot_status}]", end = "\r")
 
 
+    def is_target_locked(self):
+        return False if self.current_detection == None else 950 <= self.current_detection[0] <= 970 and 530 <= self.current_detection[1] <= 550
+
+
     def sleep(duration, get_now=time.perf_counter):
         now = get_now()
         end = now + duration
         while now < end:
             now = get_now()
 
+
     def left_click():
+        if win32api.GetKeyState(0x01) in (-127, -128):
+            ctypes.windll.user32.mouse_event(0x0004)
+            Aimbot.sleep(0.001)
         ctypes.windll.user32.mouse_event(0x0002)
         Aimbot.sleep(0.001)
         ctypes.windll.user32.mouse_event(0x0004)
+
 
     def move_crosshair(self):
         if self.current_detection != None:
@@ -116,7 +125,7 @@ class Aimbot:
                 ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(extra))
                 x = Input(ctypes.c_ulong(0), ii_)
                 ctypes.windll.user32.SendInput(1, ctypes.byref(x), ctypes.sizeof(x))
-                Aimbot.sleep(self.mouse_delay) #time.sleep is not accurate enough.
+                #Aimbot.sleep(self.mouse_delay) #time.sleep is not accurate enough.
         #print("DEBUG: sleeping for 2 seconds")
         #time.sleep(2)
 
@@ -153,13 +162,17 @@ class Aimbot:
                     x1y1 = [int(x.item()) for x in box[:2]]
                     x2y2 = [int(x.item()) for x in box[2:]]
                     cv2.rectangle(frame, x1y1, x2y2, (0, 0, 255), 2) #draw the bounding boxes for all of the player detections
-                    cv2.putText(frame, f"{int(conf * 100)}%", x1y1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2) #draw the confidence labels on the bounding boxes
+                    target_str = "TARGET LOCKED" if Aimbot.is_target_locked(self) else "TARGET TRACKING"
+                    cv2.putText(frame, f"{int(conf * 100)}% [{target_str}]", x1y1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2) #draw the confidence labels on the bounding boxes
                     targeted = True if win32api.GetKeyState(0x02) in (-127, -128) else False #checks if right mouse button is being held down
 
                     # object detections are automatically ordered from greatest to least confidence
                     # best detection variables are assigned only once at the beginning of the loop
                     if first_pass and x1y1[0] > 10: #ensures that your own player is not aimed at
                         first_pass = False
+                        target_str = "TARGET LOCKED" if Aimbot.is_target_locked(self) else "TARGET TRACKING"
+                        cv2.putText(frame, f"{int(conf * 100)}% [{target_str}]", x1y1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2) #draw the confidence labels on the bounding boxes
+
                         x1, y1, x2, y2, best_conf = *x1y1, *x2y2, conf.item()
                         height = y2 - y1
                         relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.5) #offset to roughly approximate the head using a ratio of the height
