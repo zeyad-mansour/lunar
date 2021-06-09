@@ -46,7 +46,7 @@ def setup():
     targeting_sens = prompt("Targeting Sensitivity (from in-game settings): ")
 
     print("[INFO] Your in-game targeting sensitivity must be the same as your scoping sensitivity")
-    sensitivity_settings = {"xy_sens": xy_sens, "targeting_sens": targeting_sens, "xy_scale": modf(10/xy_sens), "targeting_scale": modf(1000/(targeting_sens * xy_sens))}
+    sensitivity_settings = {"xy_sens": xy_sens, "targeting_sens": targeting_sens, "xy_scale": 10/xy_sens, "targeting_scale": 1000/(targeting_sens * xy_sens)}
 
     with open('lib/config/config.json', 'w') as outfile:
         json.dump(sensitivity_settings, outfile)

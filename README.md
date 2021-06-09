@@ -31,10 +31,6 @@ python lunar.py setup
 ## Required in-game settings:
 - 1920 x 1080 resolution
 - 75% HUD scale
-- <details>
-  <summary>Sensitivity</summary>
-  Using a very low in-game sensitivity will slow down the aiming (not including the <a href = "https://github.com/zeyad-mansour/Lunar/blob/518a9ccd3c41c2327ff789a9f8755ef66362ee70/lib/aimbot.py#L78">mouse_delay</a> constant). For example, an x and y axis sensitivity of 1.0 can take about 20 miliseconds to move 300 pixels in the game. However, with an in-game sensitivity of 5 or 10, the interpolation time is negligible.
-  </details>
 
 ## Future Updates
 - Use TensorRT for faster inference
