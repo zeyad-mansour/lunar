@@ -138,7 +138,7 @@ class Aimbot:
         length = int(math.sqrt((diff_x)**2 + (diff_y)**2))
         if length == 0: return
         unit_x = (diff_x/length) * pixel_increment
-        unit_y = (diff_y/length) * pixel_increment  #385: 0.0316
+        unit_y = (diff_y/length) * pixel_increment
         x = y = sum_x = sum_y = 0
         for k in range(0, length):
             sum_x += x
