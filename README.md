@@ -37,6 +37,7 @@ python lunar.py setup
 - Train a model to detect players better than the YOLOv5s person detection
 - Explore combining real-time object detection with k-means pixel clustering
 - Implement better player tracking
+- Make an easy-to-use GUI
 
 ## Contributing
 Pull requests are welcome. If you have any suggestions, questions, or find any issues, please open an [issue](https://github.com/zeyad-mansour/Lunar/issues) and provide some detail.

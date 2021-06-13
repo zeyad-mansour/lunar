@@ -71,11 +71,11 @@ class Aimbot:
         else:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
             print(colored("[!] Check your PyTorch installation, else performance will be poor", "red"))
-        self.model.conf = 0.35  # confidence threshold (or base detection (0-1)
+        self.model.conf = 0.25  # confidence threshold (or base detection (0-1)
         self.model.iou = 0.45 # NMS IoU (0-1)
         self.model.classes = [0] #only include the person class
         self.current_detection = None
-        self.mouse_delay = 0.0005
+        self.mouse_delay = 0.00005
         with open("config/config.json") as f:
             self.sens_config = json.load(f)
         print("\n[INFO] PRESS 'F1' TO TOGGLE AIMBOT\n[INFO] PRESS 'F2' TO QUIT")
@@ -95,6 +95,7 @@ class Aimbot:
 
 
     def sleep(duration, get_now=time.perf_counter):
+        if duration == 0: return
         now = get_now()
         end = now + duration
         while now < end:
@@ -119,19 +120,19 @@ class Aimbot:
                 scale = self.sens_config["targeting_scale"]
 
             for x, y in Aimbot.interpolate_coordinates_from_center((x, y), scale):
-                if self.current_detection == None or self.current_detection[2] != targeted: return
+                if self.current_detection[2] != targeted or Aimbot.is_target_locked(self): return
                 extra = ctypes.c_ulong(0)
                 ii_ = Input_I()
                 ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(extra))
                 x = Input(ctypes.c_ulong(0), ii_)
                 ctypes.windll.user32.SendInput(1, ctypes.byref(x), ctypes.sizeof(x))
-                #Aimbot.sleep(self.mouse_delay) #time.sleep is not accurate enough.
+                Aimbot.sleep(self.mouse_delay) #time.sleep is not accurate enough
         #print("DEBUG: sleeping for 2 seconds")
         #time.sleep(2)
 
     #generator yields pixel tuples for relative movement
     def interpolate_coordinates_from_center(absolute_coordinates, scale):
-        pixel_increment = 3
+        pixel_increment = 2
         diff_x = (absolute_coordinates[0] - 960) * scale/pixel_increment
         diff_y = (absolute_coordinates[1] - 540) * scale/pixel_increment
         length = int(math.sqrt((diff_x)**2 + (diff_y)**2))
@@ -149,45 +150,40 @@ class Aimbot:
     def start(self):
         print("[INFO] Beginning screen capture")
         Aimbot.update_status_aimbot(self)
-        move_crosshair_thread = threading.Thread(target=Aimbot.move_crosshair, args=(self,))
         while True:
             start_time = time.perf_counter()
-            frame = np.array(self.screen.grab(self.detection_box))
+            frame = np.asarray(self.screen.grab(self.detection_box))
             results = self.model(frame)
-
             if len(results.xyxy[0]) != 0: #player detected
                 first_pass = True
 
                 for *box, conf, cls in results.xyxy[0]: #iterate over each person detected
                     x1y1 = [int(x.item()) for x in box[:2]]
                     x2y2 = [int(x.item()) for x in box[2:]]
-                    cv2.rectangle(frame, x1y1, x2y2, (0, 0, 255), 2) #draw the bounding boxes for all of the player detections
-                    target_str = "TARGET LOCKED" if Aimbot.is_target_locked(self) else "TARGET TRACKING"
-                    cv2.putText(frame, f"{int(conf * 100)}% [{target_str}]", x1y1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2) #draw the confidence labels on the bounding boxes
+                    cv2.rectangle(frame, x1y1, x2y2, (244, 113, 116), 2) #draw the bounding boxes for all of the player detections
+                    cv2.putText(frame, f"{int(conf * 100)}%", x1y1, cv2.FONT_HERSHEY_DUPLEX, 0.5, (244, 113, 116), 2) #draw the confidence labels on the bounding boxes
                     targeted = True if win32api.GetKeyState(0x02) in (-127, -128) else False #checks if right mouse button is being held down
 
                     # object detections are automatically ordered from greatest to least confidence
                     # best detection variables are assigned only once at the beginning of the loop
                     if first_pass and x1y1[0] > 10: #ensures that your own player is not aimed at
                         first_pass = False
-                        target_str = "TARGET LOCKED" if Aimbot.is_target_locked(self) else "TARGET TRACKING"
-                        cv2.putText(frame, f"{int(conf * 100)}% [{target_str}]", x1y1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2) #draw the confidence labels on the bounding boxes
+                        str_color = (114, 243, 112) if Aimbot.is_target_locked(self) else (114, 128, 250)
+                        cv2.putText(frame, f"{int(conf * 100)}%", x1y1, cv2.FONT_HERSHEY_DUPLEX, 0.5, str_color, 2) #draw the confidence labels on the bounding boxes
 
                         x1, y1, x2, y2, best_conf = *x1y1, *x2y2, conf.item()
                         height = y2 - y1
                         relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.5) #offset to roughly approximate the head using a ratio of the height
-                        cv2.circle(frame, (relative_head_X, relative_head_Y), 5, (0, 255, 0), -1)
+                        cv2.circle(frame, (relative_head_X, relative_head_Y), 5, (114, 243, 112), -1)
                         absolute_head_X, absolute_head_Y = relative_head_X + self.detection_box[0], relative_head_Y + self.detection_box[1]
                         self.current_detection = (absolute_head_X, absolute_head_Y, targeted)
 
                         #pixel val is specific to 1920x1080 resolution at 75% HUD
-                        if self.aimbot_status == colored("ENABLED", 'green') and ctypes.windll.gdi32.GetPixel(ctypes.windll.user32.GetDC(0), 1563, 953) != 16777215:
-                            if move_crosshair_thread.is_alive() == False:
-                                move_crosshair_thread = threading.Thread(target=Aimbot.move_crosshair, args=(self,))
-                                move_crosshair_thread.start()
+                        if self.aimbot_status == colored("ENABLED", 'green') and ctypes.windll.gdi32.GetPixel(ctypes.windll.user32.GetDC(0), 1563, 953) != 16777215 and targeted:
+                            Aimbot.move_crosshair(self)
             else:
                 self.current_detection = None
-            cv2.putText(frame, f"FPS: {int(1/(time.perf_counter() - start_time))}", (5, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv2.putText(frame, f"FPS: {int(1/(time.perf_counter() - start_time))}", (5, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (113, 116, 244), 2)
             cv2.imshow("Lunar Vision", frame)
             if cv2.waitKey(1) & 0xFF == ord('0'):
                 break
