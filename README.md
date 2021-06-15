@@ -36,7 +36,7 @@ python lunar.py setup
 - Use TensorRT for faster inference
 - Train a model to detect players better than the YOLOv5s person detection
 - Explore combining real-time object detection with k-means pixel clustering
-- Implement better player tracking
+- Implement better player tracking with support for controller
 - Make an easy-to-use GUI
 
 ## Contributing
