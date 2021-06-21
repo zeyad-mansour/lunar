@@ -74,7 +74,7 @@ class Aimbot:
         self.model.iou = 0.45 # NMS IoU (0-1)
         self.model.classes = [0] #only include the person class
         self.current_detection = None
-        self.mouse_delay = 0.0001
+        self.mouse_delay = 0.00005
         with open("config/config.json") as f:
             self.sens_config = json.load(f)
         print("\n[INFO] PRESS 'F1' TO TOGGLE AIMBOT\n[INFO] PRESS 'F2' TO QUIT")
