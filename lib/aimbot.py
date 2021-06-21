@@ -5,7 +5,6 @@ import math
 import mss
 import numpy as np
 import os
-import scipy.interpolate
 import sys
 import threading
 import time
