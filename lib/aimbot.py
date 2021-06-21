@@ -91,7 +91,8 @@ class Aimbot:
 
 
     def is_target_locked(self):
-        return False if self.current_detection == None else 950 <= self.current_detection[0] <= 970 and 530 <= self.current_detection[1] <= 550
+        #plus/minus 4 pixel threshold
+        return False if self.current_detection == None else 956 <= self.current_detection[0] <= 964 and 536 <= self.current_detection[1] <= 544
 
 
     def sleep(duration, get_now=time.perf_counter):
@@ -120,7 +121,7 @@ class Aimbot:
                 scale = self.sens_config["targeting_scale"]
 
             for x, y in Aimbot.interpolate_coordinates_from_center((x, y), scale):
-                if self.current_detection[2] != targeted: return
+                if self.current_detection[2] != targeted or Aimbot.is_target_locked(self): return
                 extra = ctypes.c_ulong(0)
                 ii_ = Input_I()
                 ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(extra))
