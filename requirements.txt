@@ -20,4 +20,3 @@ pynput
 requests
 wheel
 termcolor
-

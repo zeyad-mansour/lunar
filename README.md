@@ -27,16 +27,16 @@ To update sensitivity settings:
 ```           
 python lunar.py setup
 ```
+The aimbot works when scoping in (holding down the right mouse button).
 
 ## Required in-game settings:
 - 1920 x 1080 resolution
-- 75% HUD scale
 
 ## Future Updates
 - Use TensorRT for faster inference
 - Train a model to detect players better than the YOLOv5s person detection
 - Explore combining real-time object detection with k-means pixel clustering
-- Implement better player tracking with support for controller
+- Implement better player tracking
 - Make an easy-to-use GUI
 
 ## Contributing

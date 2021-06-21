@@ -75,7 +75,7 @@ class Aimbot:
         self.model.iou = 0.45 # NMS IoU (0-1)
         self.model.classes = [0] #only include the person class
         self.current_detection = None
-        self.mouse_delay = 0.00005
+        self.mouse_delay = 0.0001
         with open("config/config.json") as f:
             self.sens_config = json.load(f)
         print("\n[INFO] PRESS 'F1' TO TOGGLE AIMBOT\n[INFO] PRESS 'F2' TO QUIT")
@@ -120,7 +120,7 @@ class Aimbot:
                 scale = self.sens_config["targeting_scale"]
 
             for x, y in Aimbot.interpolate_coordinates_from_center((x, y), scale):
-                if self.current_detection[2] != targeted or Aimbot.is_target_locked(self): return
+                if self.current_detection[2] != targeted: return
                 extra = ctypes.c_ulong(0)
                 ii_ = Input_I()
                 ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(extra))
@@ -132,7 +132,7 @@ class Aimbot:
 
     #generator yields pixel tuples for relative movement
     def interpolate_coordinates_from_center(absolute_coordinates, scale):
-        pixel_increment = 2
+        pixel_increment = 2 #controls how many pixels the mouse moves for each relative movement
         diff_x = (absolute_coordinates[0] - 960) * scale/pixel_increment
         diff_y = (absolute_coordinates[1] - 540) * scale/pixel_increment
         length = int(math.sqrt((diff_x)**2 + (diff_y)**2))
@@ -148,39 +148,55 @@ class Aimbot:
 
 
     def start(self):
+
         print("[INFO] Beginning screen capture")
         Aimbot.update_status_aimbot(self)
+
         while True:
+
             start_time = time.perf_counter()
             frame = np.asarray(self.screen.grab(self.detection_box))
             results = self.model(frame)
-            if len(results.xyxy[0]) != 0: #player detected
-                first_pass = True
 
-                for *box, conf, cls in results.xyxy[0]: #iterate over each person detected
+            if len(results.xyxy[0]) != 0: #player detected
+
+                least_crosshair_dist = closest_detection = None
+
+                for *box, conf, cls in results.xyxy[0]: #iterate over each player detected
                     x1y1 = [int(x.item()) for x in box[:2]]
                     x2y2 = [int(x.item()) for x in box[2:]]
-                    cv2.rectangle(frame, x1y1, x2y2, (244, 113, 116), 2) #draw the bounding boxes for all of the player detections
+                    cv2.rectangle(frame, x1y1, x2y2, (244, 113, 115), 2) #draw the bounding boxes for all of the player detections
                     cv2.putText(frame, f"{int(conf * 100)}%", x1y1, cv2.FONT_HERSHEY_DUPLEX, 0.5, (244, 113, 116), 2) #draw the confidence labels on the bounding boxes
-                    targeted = True if win32api.GetKeyState(0x02) in (-127, -128) else False #checks if right mouse button is being held down
+                    x1, y1, x2, y2, conf = *x1y1, *x2y2, conf.item()
+                    height = y2 - y1
+                    relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.5) #offset to roughly approximate the head using a ratio of the height
 
-                    # object detections are automatically ordered from greatest to least confidence
-                    # best detection variables are assigned only once at the beginning of the loop
-                    if first_pass and x1y1[0] > 10: #ensures that your own player is not aimed at
-                        first_pass = False
-                        str_color = (114, 243, 112) if Aimbot.is_target_locked(self) else (114, 128, 250)
-                        cv2.putText(frame, f"{int(conf * 100)}%", x1y1, cv2.FONT_HERSHEY_DUPLEX, 0.5, str_color, 2) #draw the confidence labels on the bounding boxes
+                    #calculate the distance between each detection and the crosshair at (self.centered_box_constant, self.centered_box_constant)
+                    crosshair_dist = math.dist((relative_head_X, relative_head_Y), (self.centered_box_constant, self.centered_box_constant))
 
-                        x1, y1, x2, y2, best_conf = *x1y1, *x2y2, conf.item()
-                        height = y2 - y1
-                        relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.5) #offset to roughly approximate the head using a ratio of the height
-                        cv2.circle(frame, (relative_head_X, relative_head_Y), 5, (114, 243, 112), -1)
-                        absolute_head_X, absolute_head_Y = relative_head_X + self.detection_box[0], relative_head_Y + self.detection_box[1]
-                        self.current_detection = (absolute_head_X, absolute_head_Y, targeted)
+                    if not least_crosshair_dist: least_crosshair_dist = crosshair_dist #initalize least crosshair distance variable
 
-                        #pixel val is specific to 1920x1080 resolution at 75% HUD
-                        if self.aimbot_status == colored("ENABLED", 'green') and ctypes.windll.gdi32.GetPixel(ctypes.windll.user32.GetDC(0), 1563, 953) != 16777215 and targeted:
-                            Aimbot.move_crosshair(self)
+                    if crosshair_dist <= least_crosshair_dist and x1y1[0] > 10: #second condition ensures that your own player is not aimed at
+                        least_crosshair_dist = crosshair_dist
+                        closest_detection = {"x1y1": x1y1, "x2y2": x2y2, "relative_head_X": relative_head_X, "relative_head_Y": relative_head_Y, "conf": conf, "crosshair_dist": crosshair_dist}
+
+                targeted = True if win32api.GetKeyState(0x02) in (-127, -128) else False #checks if right mouse button is being held down
+
+                if closest_detection:
+
+                    label = {"string": "LOCKED", "color": (115, 244, 113)} if Aimbot.is_target_locked(self) else {"string": "TARGETING", "color": (115, 113, 244)}
+                    x1, y1 = closest_detection["x1y1"]
+                    cv2.putText(frame, label["string"], (x1 + 40, y1), cv2.FONT_HERSHEY_DUPLEX, 0.5, label["color"], 2) #draw the confidence labels on the bounding boxes
+                    cv2.circle(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), 5, (115, 244, 113), -1) #draw circle on the head
+
+                    #draw line (tracer) from the crosshair to the head
+                    cv2.line(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), (self.centered_box_constant, self.centered_box_constant), (244, 242, 113), 2)
+
+                    absolute_head_X, absolute_head_Y = closest_detection["relative_head_X"] + self.detection_box[0], closest_detection["relative_head_Y"] + self.detection_box[1]
+                    self.current_detection = (absolute_head_X, absolute_head_Y, targeted)
+
+                    if self.aimbot_status == colored("ENABLED", 'green') and targeted:
+                        Aimbot.move_crosshair(self)
             else:
                 self.current_detection = None
             cv2.putText(frame, f"FPS: {int(1/(time.perf_counter() - start_time))}", (5, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (113, 116, 244), 2)
