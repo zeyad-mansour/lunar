@@ -65,10 +65,10 @@ if __name__ == "__main__":
     (Neural-Network Aimbot)''', "yellow"))
 
     if len(sys.argv) > 1 and sys.argv[1] == "setup":
+        if not os.path.exists("lib/config/config.json"):
+            print("[!] Sensitivity configuration is not set")
         setup()
-    elif not os.path.exists("lib/config/config.json"):
-        print("[!] Sensitivity configuration is not set")
-        setup()
+        
     listener = keyboard.Listener(on_release=on_release)
     listener.start()
     main()
