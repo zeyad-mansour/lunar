@@ -202,7 +202,7 @@ class Aimbot:
                     cv2.circle(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), 5, (115, 244, 113), -1) #draw circle on the head
 
                     #draw line (tracer) from the crosshair to the head
-                    cv2.line(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), (self.centered_box_constant, self.centered_box_constant), (244, 242, 113), 2)
+                    cv2.line(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), (self.centered_box_constant//2, self.centered_box_constant//2), (244, 242, 113), 2)
 
                     absolute_head_X, absolute_head_Y = closest_detection["relative_head_X"] + self.detection_box['left'], closest_detection["relative_head_Y"] + self.detection_box['top']
                     self.current_detection = {"x": absolute_head_X, "y": absolute_head_Y, "targeted": targeted, "confidence": closest_detection["conf"]}
