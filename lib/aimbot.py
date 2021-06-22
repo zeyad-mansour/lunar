@@ -122,7 +122,7 @@ class Aimbot:
                 scale = self.sens_config["targeting_scale"]
 
             for x, y in Aimbot.interpolate_coordinates_from_center((x, y), scale):
-                if self.current_detection[2] != targeted or Aimbot.is_target_locked(self): return
+                if self.current_detection[2] != targeted: return
                 extra = ctypes.c_ulong(0)
                 ii_ = Input_I()
                 ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(extra))
