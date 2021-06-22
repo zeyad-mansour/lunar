@@ -51,18 +51,19 @@ class Aimbot:
     def __init__(self):
         self.aimbot_status = colored("ENABLED", 'green')
         self.screen = mss.mss()
-        self.half_screen_width = 960
-        self.half_screen_height = 540
 
         #this controls the initial box width and height of the "Lunar Vision" window
         #you can modify this to change how large you want the detection area to be
         self.centered_box_constant = 200 #large values will cause error (your own player will be aimed at)
 
-        #You can change these offsets
-        self.detection_box = (int(self.half_screen_width - self.centered_box_constant),  #x1 coord
-                              int(self.half_screen_height - self.centered_box_constant), #y1 coord
-                              int(self.half_screen_width + self.centered_box_constant),  #x2 coord
-                              int(self.half_screen_height + self.centered_box_constant)) #y2 coord
+        half_screen_width = ctypes.windll.user32.GetSystemMetrics(0)/2
+        half_screen_height = ctypes.windll.user32.GetSystemMetrics(1)/2
+
+        self.detection_box = {'left': int(half_screen_width - self.centered_box_constant), #x1 coord (for top-left corner of the box)
+                              'top': int(half_screen_height - self.centered_box_constant), #y1 coord (for top-left corner of the box)
+                              'width': int(self.centered_box_constant * 2),  #width of the box
+                              'height': int(self.centered_box_constant * 2)} #height of the box
+
         print("[INFO] Loading the neural network model")
         self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', force_reload = True)
         if torch.cuda.is_available():
@@ -70,6 +71,7 @@ class Aimbot:
         else:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
             print(colored("[!] Check your PyTorch installation, else performance will be poor", "red"))
+
         self.model.conf = 0.25  # confidence threshold (or base detection (0-1)
         self.model.iou = 0.45 # NMS IoU (0-1)
         self.model.classes = [0] #only include the person class
@@ -155,7 +157,7 @@ class Aimbot:
         while True:
 
             start_time = time.perf_counter()
-            frame = np.asarray(self.screen.grab(self.detection_box))
+            frame = np.array(self.screen.grab(self.detection_box))
             results = self.model(frame)
 
             if len(results.xyxy[0]) != 0: #player detected
@@ -192,7 +194,7 @@ class Aimbot:
                     #draw line (tracer) from the crosshair to the head
                     cv2.line(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), (self.centered_box_constant, self.centered_box_constant), (244, 242, 113), 2)
 
-                    absolute_head_X, absolute_head_Y = closest_detection["relative_head_X"] + self.detection_box[0], closest_detection["relative_head_Y"] + self.detection_box[1]
+                    absolute_head_X, absolute_head_Y = closest_detection["relative_head_X"] + self.detection_box['left'], closest_detection["relative_head_Y"] + self.detection_box['top']
                     self.current_detection = (absolute_head_X, absolute_head_Y, targeted)
 
                     if self.aimbot_status == colored("ENABLED", 'green') and targeted:

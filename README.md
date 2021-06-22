@@ -29,9 +29,6 @@ python lunar.py setup
 ```
 The aimbot works when scoping in (holding down the right mouse button).
 
-## Required in-game settings:
-- 1920 x 1080 resolution
-
 ## Future Updates
 - Use TensorRT for faster inference
 - Train a model to detect players better than the YOLOv5s person detection
