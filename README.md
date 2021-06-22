@@ -27,7 +27,7 @@ To update sensitivity settings:
 ```           
 python lunar.py setup
 ```
-The aimbot works when scoping in (holding down the right mouse button).
+As of now, the aimbot is set to only work when targeting/scoping in (holding down the right mouse button). Therefore, it is not recommended to use at a close range.
 
 ## Future Updates
 - Use TensorRT for faster inference

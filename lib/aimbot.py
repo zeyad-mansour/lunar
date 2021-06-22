@@ -72,7 +72,8 @@ class Aimbot:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
             print(colored("[!] Check your PyTorch installation, else performance will be poor", "red"))
 
-        self.model.conf = 0.25  # confidence threshold (or base detection (0-1)
+        self.model.conf = 0.1 # base confidence threshold (or base detection (0-1)
+        self.non_targeting_thresh = 0.7 #TODO
         self.model.iou = 0.45 # NMS IoU (0-1)
         self.model.classes = [0] #only include the person class
         self.current_detection = None
@@ -92,8 +93,8 @@ class Aimbot:
 
 
     def is_target_locked(self):
-        #plus/minus 4 pixel threshold
-        return False if self.current_detection == None else 956 <= self.current_detection[0] <= 964 and 536 <= self.current_detection[1] <= 544
+        #plus/minus 5 pixel threshold
+        return False if self.current_detection == None else 955 <= self.current_detection["x"] <= 965 and 535 <= self.current_detection["y"] <= 545
 
 
     def sleep(duration, get_now=time.perf_counter):
@@ -106,35 +107,38 @@ class Aimbot:
 
     def left_click():
         if win32api.GetKeyState(0x01) in (-127, -128):
-            ctypes.windll.user32.mouse_event(0x0004)
-            Aimbot.sleep(0.001)
+            return
         ctypes.windll.user32.mouse_event(0x0002)
-        Aimbot.sleep(0.001)
+        Aimbot.sleep(0.0001)
         ctypes.windll.user32.mouse_event(0x0004)
 
 
     def move_crosshair(self):
-        if self.current_detection != None:
-            x, y, targeted = self.current_detection
-            if not targeted:
-                scale = self.sens_config["xy_scale"]
-            else:
-                scale = self.sens_config["targeting_scale"]
+        targeted = self.current_detection["targeted"]
+        if targeted:
+            scale = self.sens_config["targeting_scale"]
+        elif self.current_detection["confidence"] >= self.non_targeting_thresh:
+            scale = self.sens_config["xy_scale"]
+            return #aimbot while not targeting/scoping in is currently not implemented
+            #TODO
+        else:
+            return
 
-            for x, y in Aimbot.interpolate_coordinates_from_center((x, y), scale):
-                if self.current_detection[2] != targeted: return
-                extra = ctypes.c_ulong(0)
-                ii_ = Input_I()
-                ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(extra))
-                x = Input(ctypes.c_ulong(0), ii_)
-                ctypes.windll.user32.SendInput(1, ctypes.byref(x), ctypes.sizeof(x))
-                Aimbot.sleep(self.mouse_delay) #time.sleep is not accurate enough
+        for x, y in Aimbot.interpolate_coordinates_from_center((self.current_detection["x"], self.current_detection["y"]), scale):
+            if self.current_detection["targeted"] != targeted: return
+            if Aimbot.is_target_locked(self): Aimbot.left_click()
+            extra = ctypes.c_ulong(0)
+            ii_ = Input_I()
+            ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(extra))
+            x = Input(ctypes.c_ulong(0), ii_)
+            ctypes.windll.user32.SendInput(1, ctypes.byref(x), ctypes.sizeof(x))
+            Aimbot.sleep(self.mouse_delay) #time.sleep is not accurate enough
         #print("DEBUG: sleeping for 2 seconds")
         #time.sleep(2)
 
     #generator yields pixel tuples for relative movement
     def interpolate_coordinates_from_center(absolute_coordinates, scale):
-        pixel_increment = 2 #controls how many pixels the mouse moves for each relative movement
+        pixel_increment = 3 #controls how many pixels the mouse moves for each relative movement
         diff_x = (absolute_coordinates[0] - 960) * scale/pixel_increment
         diff_y = (absolute_coordinates[1] - 540) * scale/pixel_increment
         length = int(math.sqrt((diff_x)**2 + (diff_y)**2))
@@ -178,13 +182,13 @@ class Aimbot:
 
                     if not least_crosshair_dist: least_crosshair_dist = crosshair_dist #initalize least crosshair distance variable
 
-                    if crosshair_dist <= least_crosshair_dist and x1y1[0] > 10: #second condition ensures that your own player is not aimed at
+                    if crosshair_dist <= least_crosshair_dist and x1y1[0] > 15: #second condition ensures that your own player is not aimed at
                         least_crosshair_dist = crosshair_dist
                         closest_detection = {"x1y1": x1y1, "x2y2": x2y2, "relative_head_X": relative_head_X, "relative_head_Y": relative_head_Y, "conf": conf, "crosshair_dist": crosshair_dist}
 
                 targeted = True if win32api.GetKeyState(0x02) in (-127, -128) else False #checks if right mouse button is being held down
 
-                if closest_detection:
+                if closest_detection: #if valid detection exists
 
                     label = {"string": "LOCKED", "color": (115, 244, 113)} if Aimbot.is_target_locked(self) else {"string": "TARGETING", "color": (115, 113, 244)}
                     x1, y1 = closest_detection["x1y1"]
@@ -195,9 +199,9 @@ class Aimbot:
                     cv2.line(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), (self.centered_box_constant, self.centered_box_constant), (244, 242, 113), 2)
 
                     absolute_head_X, absolute_head_Y = closest_detection["relative_head_X"] + self.detection_box['left'], closest_detection["relative_head_Y"] + self.detection_box['top']
-                    self.current_detection = (absolute_head_X, absolute_head_Y, targeted)
+                    self.current_detection = {"x": absolute_head_X, "y": absolute_head_Y, "targeted": targeted, "confidence": closest_detection["conf"]}
 
-                    if self.aimbot_status == colored("ENABLED", 'green') and targeted:
+                    if self.aimbot_status == colored("ENABLED", 'green'):
                         Aimbot.move_crosshair(self)
             else:
                 self.current_detection = None
