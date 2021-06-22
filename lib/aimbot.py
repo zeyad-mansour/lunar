@@ -54,23 +54,27 @@ class Aimbot:
 
         #this controls the initial box width and height of the "Lunar Vision" window
         #you can modify this to change how large you want the detection area to be
-        self.centered_box_constant = 200 #large values will cause error (your own player will be aimed at)
+        self.centered_box_constant = 400 #controls the size of the detection box (equaling the width and height)
 
         half_screen_width = ctypes.windll.user32.GetSystemMetrics(0)/2
         half_screen_height = ctypes.windll.user32.GetSystemMetrics(1)/2
 
-        self.detection_box = {'left': int(half_screen_width - self.centered_box_constant), #x1 coord (for top-left corner of the box)
-                              'top': int(half_screen_height - self.centered_box_constant), #y1 coord (for top-left corner of the box)
-                              'width': int(self.centered_box_constant * 2),  #width of the box
-                              'height': int(self.centered_box_constant * 2)} #height of the box
+        self.detection_box = {'left': int(half_screen_width - self.centered_box_constant/2), #x1 coord (for top-left corner of the box)
+                              'top': int(half_screen_height - self.centered_box_constant/2), #y1 coord (for top-left corner of the box)
+                              'width': int(self.centered_box_constant),  #width of the box
+                              'height': int(self.centered_box_constant)} #height of the box
 
         print("[INFO] Loading the neural network model")
         self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', force_reload = True)
         if torch.cuda.is_available():
-            print(colored("CUDA ACCELERATION [ENABLED]", "green"))
+            if "1650" in torch.cuda.get_device_name(torch.cuda.current_device()): #known error with the 1650 GPUs where detection doesn't work
+                self.model = self.model.to('cpu')
+                print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
+            else:
+                print(colored("CUDA ACCELERATION [ENABLED]", "green"))
         else:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
-            print(colored("[!] Check your PyTorch installation, else performance will be poor", "red"))
+            print(colored("[!] Check your PyTorch installation, else performance will be very poor", "red"))
 
         self.model.conf = 0.1 # base confidence threshold (or base detection (0-1)
         self.non_targeting_thresh = 0.7 #TODO
@@ -106,7 +110,7 @@ class Aimbot:
 
 
     def left_click():
-        if win32api.GetKeyState(0x01) in (-127, -128):
+        if win32api.GetKeyState(0x01) in (-127, -128): #left mouse button is already being held down
             return
         ctypes.windll.user32.mouse_event(0x0002)
         Aimbot.sleep(0.0001)
@@ -169,6 +173,7 @@ class Aimbot:
                 least_crosshair_dist = closest_detection = None
 
                 for *box, conf, cls in results.xyxy[0]: #iterate over each player detected
+
                     x1y1 = [int(x.item()) for x in box[:2]]
                     x2y2 = [int(x.item()) for x in box[2:]]
                     cv2.rectangle(frame, x1y1, x2y2, (244, 113, 115), 2) #draw the bounding boxes for all of the player detections
@@ -182,7 +187,8 @@ class Aimbot:
 
                     if not least_crosshair_dist: least_crosshair_dist = crosshair_dist #initalize least crosshair distance variable
 
-                    if crosshair_dist <= least_crosshair_dist and x1y1[0] > 15: #second condition ensures that your own player is not aimed at
+                    is_own_player = x1 < 15 or (x1 < self.centered_box_constant/5 and y2 > self.centered_box_constant/1.2) #helps ensure that your own player is not regarded as a valid detection
+                    if crosshair_dist <= least_crosshair_dist and not is_own_player:
                         least_crosshair_dist = crosshair_dist
                         closest_detection = {"x1y1": x1y1, "x2y2": x2y2, "relative_head_X": relative_head_X, "relative_head_Y": relative_head_Y, "conf": conf, "crosshair_dist": crosshair_dist}
 
