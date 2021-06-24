@@ -67,7 +67,7 @@ class Aimbot:
         print("[INFO] Loading the neural network model")
         self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', force_reload = True)
         if torch.cuda.is_available():
-            if "1650" in torch.cuda.get_device_name(torch.cuda.current_device()): #known error with the 1650 GPUs where detection doesn't work
+            if "1660" in torch.cuda.get_device_name(torch.cuda.current_device()): #known error with the 1660 GPUs where detection doesn't work
                 self.model = self.model.to('cpu')
                 print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
             else:
