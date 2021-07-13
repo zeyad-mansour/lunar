@@ -1,6 +1,5 @@
 import argparse
 import json
-import msvcrt
 import os
 import sys
 import threading
@@ -46,7 +45,7 @@ def setup():
     targeting_sens = prompt("Targeting Sensitivity (from in-game settings): ")
 
     print("[INFO] Your in-game targeting sensitivity must be the same as your scoping sensitivity")
-    sensitivity_settings = {"xy_sens": xy_sens, "targeting_sens": targeting_sens, "xy_scale": 9/xy_sens, "targeting_scale": 900/(targeting_sens * xy_sens)}
+    sensitivity_settings = {"xy_sens": xy_sens, "targeting_sens": targeting_sens, "xy_scale": 10/xy_sens, "targeting_scale": 1000/(targeting_sens * xy_sens)}
 
     with open('lib/config/config.json', 'w') as outfile:
         json.dump(sensitivity_settings, outfile)
@@ -64,8 +63,9 @@ if __name__ == "__main__":
 
     (Neural-Network Aimbot)''', "yellow"))
 
-    if len(sys.argv) > 1 and sys.argv[1] == "setup":
-        if not os.path.exists("lib/config/config.json"):
+    path_exists = os.path.exists("lib/config/config.json")
+    if not path_exists or (len(sys.argv) > 1 and sys.argv[1] == "setup"):
+        if not path_exists:
             print("[!] Sensitivity configuration is not set")
         setup()
 

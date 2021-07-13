@@ -6,7 +6,6 @@ import mss
 import numpy as np
 import os
 import sys
-import threading
 import time
 import torch
 import win32api
@@ -56,8 +55,8 @@ class Aimbot:
         #you can modify this to change how large you want the detection area to be
         self.centered_box_constant = 400 #controls the size of the detection box (equaling the width and height)
 
-        half_screen_width = ctypes.windll.user32.GetSystemMetrics(0)/2
-        half_screen_height = ctypes.windll.user32.GetSystemMetrics(1)/2
+        half_screen_width = ctypes.windll.user32.GetSystemMetrics(0)/2 #this should always be 960
+        half_screen_height = ctypes.windll.user32.GetSystemMetrics(1)/2 #this should always be 540
 
         self.detection_box = {'left': int(half_screen_width - self.centered_box_constant/2), #x1 coord (for top-left corner of the box)
                               'top': int(half_screen_height - self.centered_box_constant/2), #y1 coord (for top-left corner of the box)
@@ -67,9 +66,9 @@ class Aimbot:
         print("[INFO] Loading the neural network model")
         self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', force_reload = True)
         if torch.cuda.is_available():
-            if "1660" in torch.cuda.get_device_name(torch.cuda.current_device()): #known error with the 1660 GPUs where detection doesn't work
+            if "16" in torch.cuda.get_device_name(torch.cuda.current_device()): #known error with the 1650 GPUs where detection doesn't work
                 self.model = self.model.to('cpu')
-                print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
+                print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE (ISSUE WITH 1650/1660 GPUs)", "red"))
             else:
                 print(colored("CUDA ACCELERATION [ENABLED]", "green"))
         else:
@@ -82,6 +81,7 @@ class Aimbot:
         self.model.classes = [0] #only include the person class
         self.current_detection = None
         self.mouse_delay = 0.00005
+
         with open("config/config.json") as f:
             self.sens_config = json.load(f)
         print("\n[INFO] PRESS 'F1' TO TOGGLE AIMBOT\n[INFO] PRESS 'F2' TO QUIT")
@@ -98,7 +98,11 @@ class Aimbot:
 
     def is_target_locked(self):
         #plus/minus 5 pixel threshold
-        return False if self.current_detection == None else 955 <= self.current_detection["x"] <= 965 and 535 <= self.current_detection["y"] <= 545
+        threshold = 5
+        if self.current_detection == None:
+            return False
+        elif 960 - threshold <= self.current_detection["x"] <= 960 - threshold and 540 - threshold <= self.current_detection["y"] <= 540 + threshold:
+            return True
 
 
     def sleep(duration, get_now=time.perf_counter):
@@ -112,9 +116,9 @@ class Aimbot:
     def left_click():
         if win32api.GetKeyState(0x01) in (-127, -128): #left mouse button is already being held down
             return
-        ctypes.windll.user32.mouse_event(0x0002)
+        ctypes.windll.user32.mouse_event(0x0002) #left mouse down
         Aimbot.sleep(0.0001)
-        ctypes.windll.user32.mouse_event(0x0004)
+        ctypes.windll.user32.mouse_event(0x0004) #left mouse up
 
 
     def move_crosshair(self):
@@ -142,7 +146,7 @@ class Aimbot:
 
     #generator yields pixel tuples for relative movement
     def interpolate_coordinates_from_center(absolute_coordinates, scale):
-        pixel_increment = 3 #controls how many pixels the mouse moves for each relative movement
+        pixel_increment = 4 #controls how many pixels the mouse moves for each relative movement
         diff_x = (absolute_coordinates[0] - 960) * scale/pixel_increment
         diff_y = (absolute_coordinates[1] - 540) * scale/pixel_increment
         length = int(math.sqrt((diff_x)**2 + (diff_y)**2))
@@ -155,6 +159,7 @@ class Aimbot:
             sum_y += y
             x, y = round(unit_x * k - sum_x), round(unit_y * k - sum_y)
             yield x, y
+
 
 
     def start(self):
