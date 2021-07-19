@@ -1,28 +1,24 @@
-import argparse
 import json
 import os
 import sys
 import threading
 
-from lib.aimbot import Aimbot
 from pynput import keyboard
 from termcolor import colored
-from math import modf
 
 
 def on_release(key):
     try:
         if key == keyboard.Key.f1:
-            lunar.update_status_aimbot()
+            Aimbot.update_status_aimbot()
         if key == keyboard.Key.f2:
-            lunar.clean_up()
+            Aimbot.clean_up()
     except NameError:
         pass
 
 def main():
     global lunar
-    os.chdir("lib")
-    lunar = Aimbot()
+    lunar = Aimbot(collect_data = "collect_data" in sys.argv)
     lunar.start()
 
 def setup():
@@ -64,11 +60,14 @@ if __name__ == "__main__":
     (Neural-Network Aimbot)''', "yellow"))
 
     path_exists = os.path.exists("lib/config/config.json")
-    if not path_exists or (len(sys.argv) > 1 and sys.argv[1] == "setup"):
+    if not path_exists or ("setup" in sys.argv):
         if not path_exists:
             print("[!] Sensitivity configuration is not set")
         setup()
-
+    path_exists = os.path.exists("lib/data")
+    if "collect_data" in sys.argv and not path_exists:
+        os.makedirs("lib/data")
+    from lib.aimbot import Aimbot
     listener = keyboard.Listener(on_release=on_release)
     listener.start()
     main()

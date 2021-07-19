@@ -27,11 +27,18 @@ To update sensitivity settings:
 ```           
 python lunar.py setup
 ```
-As of now, the aimbot is set to only work when targeting/scoping in (holding down the right mouse button). Therefore, it is not recommended to use at a close range.
+To collect image data for training:
+```           
+python lunar.py collect_data
+```
+
+## Notes
+- As of now, the aimbot is set to only work when targeting/scoping in (holding down the right mouse button). Therefore, it is not recommended to use at a close range.
+- There is a known issue that occurs with PyTorch and GTX 1650/1660 GPUs on Windows
 
 ## Future Updates
 - Use TensorRT for faster inference
-- Train a model to detect players better than the YOLOv5s person detection
+- Train a model on a custom dataset
 - Explore combining real-time object detection with k-means pixel clustering
 - Implement better player tracking
 - Make an easy-to-use GUI
