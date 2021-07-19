@@ -27,7 +27,7 @@ To update sensitivity settings:
 ```           
 python lunar.py setup
 ```
-To collect image data for training:
+To collect image data for annotating and training:
 ```           
 python lunar.py collect_data
 ```
