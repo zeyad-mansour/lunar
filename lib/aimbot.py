@@ -147,7 +147,9 @@ class Aimbot:
                           'top': int(half_screen_height - self.box_constant/2), #y1 coord (for top-left corner of the box)
                           'width': int(self.box_constant),  #width of the box
                           'height': int(self.box_constant)} #height of the box
-        if self.collect_data: collect_delay = 0
+        if self.collect_data:
+            collect_pause = 0
+            set_collect_delay = True
 
         while True:
             start_time = time.perf_counter()
@@ -194,9 +196,15 @@ class Aimbot:
                         cv2.putText(frame, "TARGETING", (x1 + 40, y1), cv2.FONT_HERSHEY_DUPLEX, 0.5, (115, 113, 244), 2) #draw the confidence labels on the bounding boxes
 
                     if Aimbot.aimbot_status == colored("ENABLED", 'green'):
-                        if self.collect_data and time.perf_counter() - collect_delay > 2 and targeted:
-                            cv2.imwrite(f"lib/data/{str(uuid.uuid4())}.jpg", orig_frame)
-                            collect_delay = time.perf_counter()
+                        if self.collect_data and time.perf_counter() - collect_pause > 2 and targeted: #screenshots can only be taken every 2 seconds
+                            if set_collect_delay:
+                                collect_delay = time.perf_counter()
+                                set_collect_delay = False
+
+                            if time.perf_counter() - collect_delay > 0.3: #ensures that player has been targeting for at least 0.3 seconds
+                                cv2.imwrite(f"lib/data/{str(uuid.uuid4())}.jpg", orig_frame)
+                                collect_pause = collect_delay = time.perf_counter()
+
                         Aimbot.move_crosshair(self, absolute_head_X, absolute_head_Y, targeted)
 
             cv2.putText(frame, f"FPS: {int(1/(time.perf_counter() - start_time))}", (5, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (113, 116, 244), 2)

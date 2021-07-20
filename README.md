@@ -31,6 +31,7 @@ To collect image data for annotating and training:
 ```           
 python lunar.py collect_data
 ```
+If you have image data with or with out annotations, please send that in a zip file to [zeyadmansourfwrd@gmail.com](mailto:zeyadmansourfwrd@gmail.com).
 
 ## Notes
 - As of now, the aimbot is set to only work when targeting/scoping in (holding down the right mouse button). Therefore, it is not recommended to use at a close range.
