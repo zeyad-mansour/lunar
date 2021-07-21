@@ -54,12 +54,13 @@ class Aimbot:
     aimbot_status = colored("ENABLED", 'green')
     screen = mss.mss()
 
-    def __init__(self, box_constant = 400, collect_data = False, mouse_delay = 0.0001):
+    def __init__(self, box_constant = 416, collect_data = False, mouse_delay = 0.0001):
         #controls the initial centered box width and height of the "Lunar Vision" window
         self.box_constant = box_constant #controls the size of the detection box (equaling the width and height)
 
         print("[INFO] Loading the neural network model")
-        self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
+        #self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
+        self.model = torch.hub.load('ultralytics/yolov5', 'custom', path='lib/best.pt')
         if torch.cuda.is_available():
             if "16" in torch.cuda.get_device_name(torch.cuda.current_device()): #known error with the 1650 GPUs where detection doesn't work
                 self.model = self.model.to('cpu')
@@ -70,7 +71,7 @@ class Aimbot:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
             print(colored("[!] Check your PyTorch installation, else performance will be very poor", "red"))
 
-        self.model.conf = 0.1 # base confidence threshold (or base detection (0-1)
+        self.model.conf = 0.4 # base confidence threshold (or base detection (0-1)
         self.model.iou = 0.45 # NMS IoU (0-1)
         self.model.classes = [0] #only include the person class
         self.current_detection = None
@@ -167,7 +168,7 @@ class Aimbot:
                     cv2.putText(frame, f"{int(conf * 100)}%", x1y1, cv2.FONT_HERSHEY_DUPLEX, 0.5, (244, 113, 116), 2) #draw the confidence labels on the bounding boxes
                     x1, y1, x2, y2, conf = *x1y1, *x2y2, conf.item()
                     height = y2 - y1
-                    relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.5) #offset to roughly approximate the head using a ratio of the height
+                    relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.75) #offset to roughly approximate the head using a ratio of the height
 
                     #calculate the distance between each detection and the crosshair at (self.box_constant, self.box_constant)
                     crosshair_dist = math.dist((relative_head_X, relative_head_Y), (self.box_constant, self.box_constant))
@@ -195,16 +196,15 @@ class Aimbot:
                     else:
                         cv2.putText(frame, "TARGETING", (x1 + 40, y1), cv2.FONT_HERSHEY_DUPLEX, 0.5, (115, 113, 244), 2) #draw the confidence labels on the bounding boxes
 
+                    if self.collect_data and time.perf_counter() - collect_pause > 2 and targeted: #screenshots can only be taken every 2 seconds
+                        if set_collect_delay:
+                            collect_delay = time.perf_counter()
+                            set_collect_delay = False
+                        if time.perf_counter() - collect_delay > 0.5: #ensures that player has been targeting for at least 0.5 seconds
+                            cv2.imwrite(f"lib/data/{str(uuid.uuid4())}.jpg", orig_frame)
+                            collect_pause = collect_delay = time.perf_counter()
+
                     if Aimbot.aimbot_status == colored("ENABLED", 'green'):
-                        if self.collect_data and time.perf_counter() - collect_pause > 2 and targeted: #screenshots can only be taken every 2 seconds
-                            if set_collect_delay:
-                                collect_delay = time.perf_counter()
-                                set_collect_delay = False
-
-                            if time.perf_counter() - collect_delay > 0.3: #ensures that player has been targeting for at least 0.3 seconds
-                                cv2.imwrite(f"lib/data/{str(uuid.uuid4())}.jpg", orig_frame)
-                                collect_pause = collect_delay = time.perf_counter()
-
                         Aimbot.move_crosshair(self, absolute_head_X, absolute_head_Y, targeted)
 
             cv2.putText(frame, f"FPS: {int(1/(time.perf_counter() - start_time))}", (5, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (113, 116, 244), 2)

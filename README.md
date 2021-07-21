@@ -34,15 +34,16 @@ python lunar.py collect_data
 If you have image data with or without annotations, please send that in a zip file to [zeyadmansourfwrd@gmail.com](mailto:zeyadmansourfwrd@gmail.com).
 
 ## Notes
-- As of now, the aimbot is set to only work when targeting/scoping in (holding down the right mouse button). Therefore, it is not recommended to use at a close range.
-- There is a known issue that occurs with PyTorch and GTX 1650/1660 GPUs on Windows
+- The current model is trained on a dataset of Fortnite players, and it will not work well for other games.
+- The aimbot is configured to only work when targeting/scoping in (holding down the right mouse button). It works best at a medium range.
+- There is a known issue that occurs with PyTorch and the GeForce 16 series GPUs on Windows. Unfortunately, if you are using one of these GPUs, the aimbot will work poorly for you.
 
 ## Future Updates
-- Use TensorRT for faster inference
-- Train a model on a custom dataset
-- Explore combining real-time object detection with k-means pixel clustering
-- Implement better player tracking
-- Make an easy-to-use GUI
+[x] Train a model on a custom dataset
+[] Implement better player tracking with controller support
+[] Add support for other FPS games (e.g. Valorant, Warzone)
+[] Use TensorRT for faster inference
+[] Make an easy-to-use GUI
 
 ## Contributing
 Pull requests are welcome. If you have any suggestions, questions, or find any issues, please open an [issue](https://github.com/zeyad-mansour/Lunar/issues) and provide some detail.
