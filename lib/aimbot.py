@@ -63,15 +63,15 @@ class Aimbot:
         self.model = torch.hub.load('ultralytics/yolov5', 'custom', path='lib/best.pt')
         if torch.cuda.is_available():
             if "16" in torch.cuda.get_device_name(torch.cuda.current_device()): #known error with the 1650 GPUs where detection doesn't work
-                self.model = self.model.to('cpu')
                 print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE (ISSUE WITH 1650/1660 GPUs)", "red"))
+                os._exit(1)
             else:
                 print(colored("CUDA ACCELERATION [ENABLED]", "green"))
         else:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
             print(colored("[!] Check your PyTorch installation, else performance will be very poor", "red"))
 
-        self.model.conf = 0.4 # base confidence threshold (or base detection (0-1)
+        self.model.conf = 0.35 # base confidence threshold (or base detection (0-1)
         self.model.iou = 0.45 # NMS IoU (0-1)
         self.model.classes = [0] #only include the person class
         self.current_detection = None
@@ -168,7 +168,7 @@ class Aimbot:
                     cv2.putText(frame, f"{int(conf * 100)}%", x1y1, cv2.FONT_HERSHEY_DUPLEX, 0.5, (244, 113, 116), 2) #draw the confidence labels on the bounding boxes
                     x1, y1, x2, y2, conf = *x1y1, *x2y2, conf.item()
                     height = y2 - y1
-                    relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.75) #offset to roughly approximate the head using a ratio of the height
+                    relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.7) #offset to roughly approximate the head using a ratio of the height
 
                     #calculate the distance between each detection and the crosshair at (self.box_constant, self.box_constant)
                     crosshair_dist = math.dist((relative_head_X, relative_head_Y), (self.box_constant, self.box_constant))
