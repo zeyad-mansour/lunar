@@ -39,11 +39,11 @@ If you have image data with or without annotations, please send that in a zip fi
 - There is a known issue that occurs with PyTorch and the GeForce 16 series GPUs on Windows. Unfortunately, if you are using one of these GPUs, the aimbot will work poorly for you.
 
 ## Future Updates
-[x] Train a model on a custom dataset
-[] Implement better player tracking with controller support
-[] Add support for other FPS games (e.g. Valorant, Warzone)
-[] Use TensorRT for faster inference
-[] Make an easy-to-use GUI
+- [x] Train a model on a custom dataset
+- [ ] Implement better player tracking with controller support
+- [ ] Add support for other FPS games (e.g. Valorant, Warzone)
+- [ ] Use TensorRT for faster inference
+- [ ] Make an easy-to-use GUI
 
 ## Contributing
 Pull requests are welcome. If you have any suggestions, questions, or find any issues, please open an [issue](https://github.com/zeyad-mansour/Lunar/issues) and provide some detail.
