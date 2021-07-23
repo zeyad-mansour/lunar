@@ -52,7 +52,7 @@ class Aimbot:
     extra = ctypes.c_ulong(0)
     ii_ = Input_I()
     screen = mss.mss()
-    pixel_increment = 4 #controls how many pixels the mouse moves for each relative movement
+    pixel_increment = 1 #controls how many pixels the mouse moves for each relative movement
     with open("lib/config/config.json") as f:
         sens_config = json.load(f)
     aimbot_status = colored("ENABLED", 'green')
@@ -90,8 +90,6 @@ class Aimbot:
         print(f"[!] AIMBOT IS [{Aimbot.aimbot_status}]", end = "\r")
 
     def left_click():
-        if win32api.GetKeyState(0x01) in (-127, -128): #left mouse button is already being held down
-            return
         ctypes.windll.user32.mouse_event(0x0002) #left mouse down
         Aimbot.sleep(0.0001)
         ctypes.windll.user32.mouse_event(0x0004) #left mouse up
@@ -106,7 +104,7 @@ class Aimbot:
     def is_target_locked(x, y):
         #plus/minus 5 pixel threshold
         threshold = 5
-        return True if 960 - threshold <= x <= 960 - threshold and 540 - threshold <= y <= 540 + threshold else False
+        return True if 960 - threshold <= x <= 960 + threshold and 540 - threshold <= y <= 540 + threshold else False
 
     def move_crosshair(self, x, y, targeted):
         if targeted:
@@ -115,11 +113,10 @@ class Aimbot:
             return #TODO
 
         if self.debug: start_time = time.perf_counter()
-        for x, y in Aimbot.interpolate_coordinates_from_center((x, y), scale):
-            if Aimbot.is_target_locked(x, y): Aimbot.left_click()
-            Aimbot.ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(Aimbot.extra))
-            x = Input(ctypes.c_ulong(0), Aimbot.ii_)
-            ctypes.windll.user32.SendInput(1, ctypes.byref(x), ctypes.sizeof(x))
+        for rel_x, rel_y in Aimbot.interpolate_coordinates_from_center((x, y), scale):
+            Aimbot.ii_.mi = MouseInput(rel_x, rel_y, 0, 0x0001, 0, ctypes.pointer(Aimbot.extra))
+            input_obj = Input(ctypes.c_ulong(0), Aimbot.ii_)
+            ctypes.windll.user32.SendInput(1, ctypes.byref(input_obj), ctypes.sizeof(input_obj))
             if not self.debug: Aimbot.sleep(self.mouse_delay) #time.sleep is not accurate enough
         if self.debug: #remove this later
             print(f"TIME: {time.perf_counter() - start_time}")
@@ -167,7 +164,7 @@ class Aimbot:
                     x2y2 = [int(x.item()) for x in box[2:]]
                     x1, y1, x2, y2, conf = *x1y1, *x2y2, conf.item()
                     height = y2 - y1
-                    relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.35) #offset to roughly approximate the head using a ratio of the height
+                    relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.4) #offset to roughly approximate the head using a ratio of the height
                     is_own_player = player_in_frame = x1 < 15 or (x1 < self.box_constant/5 and y2 > self.box_constant/1.2) #helps ensure that your own player is not regarded as a valid detection
 
                     #calculate the distance between each detection and the crosshair at (self.box_constant/2, self.box_constant/2)
