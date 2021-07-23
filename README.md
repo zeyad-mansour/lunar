@@ -38,6 +38,7 @@ If you have image data with or without annotations, please send that in a zip fi
 - The current model is trained on a dataset of Fortnite players, and it will not work well for other games.
 - The aimbot is configured to only work when targeting/scoping in (holding down the right mouse button). It works best at a medium/long range.
 - There is a known issue that occurs with PyTorch and the GeForce 16 series GPUs on Windows. Unfortunately, if you are using one of these GPUs, the aimbot will not work for you.
+- A much better version that is closed-source is currently being developed
 
 ## Future Updates
 - [x] Train a model on a custom dataset
