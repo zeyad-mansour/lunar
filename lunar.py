@@ -57,7 +57,7 @@ if __name__ == "__main__":
     | |___| |_| | | | | (_| | |
     \_____/\__,_|_| |_|\__,_|_|
 
-    (Neural-Network Aimbot)''', "yellow"))
+    (Neural Network Aimbot)''', "yellow"))
 
     path_exists = os.path.exists("lib/config/config.json")
     if not path_exists or ("setup" in sys.argv):
