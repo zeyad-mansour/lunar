@@ -143,8 +143,8 @@ class Aimbot:
         Aimbot.update_status_aimbot()
         half_screen_width = ctypes.windll.user32.GetSystemMetrics(0)/2 #this should always be 960
         half_screen_height = ctypes.windll.user32.GetSystemMetrics(1)/2 #this should always be 540
-        detection_box = {'left': int(half_screen_width - self.box_constant/2), #x1 coord (for top-left corner of the box)
-                          'top': int(half_screen_height - self.box_constant/2), #y1 coord (for top-left corner of the box)
+        detection_box = {'left': int(half_screen_width - self.box_constant//2), #x1 coord (for top-left corner of the box)
+                          'top': int(half_screen_height - self.box_constant//2), #y1 coord (for top-left corner of the box)
                           'width': int(self.box_constant),  #width of the box
                           'height': int(self.box_constant)} #height of the box
         if self.collect_data:
@@ -164,7 +164,7 @@ class Aimbot:
                     x2y2 = [int(x.item()) for x in box[2:]]
                     x1, y1, x2, y2, conf = *x1y1, *x2y2, conf.item()
                     height = y2 - y1
-                    relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.4) #offset to roughly approximate the head using a ratio of the height
+                    relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.7) #offset to roughly approximate the head using a ratio of the height
                     is_own_player = player_in_frame = x1 < 15 or (x1 < self.box_constant/5 and y2 > self.box_constant/1.2) #helps ensure that your own player is not regarded as a valid detection
 
                     #calculate the distance between each detection and the crosshair at (self.box_constant/2, self.box_constant/2)
