@@ -7,7 +7,7 @@ Lunar can be modified to work with a variety of FPS games; however, it is curren
 
 The basis of Lunar's player detection is the [YOLOv5](https://github.com/ultralytics/yolov5) architecture written in the PyTorch framework.
 
-A demo video can be found [here](https://www.youtube.com/watch?v=XDAcQNUuT84).
+A demo video (outdated) can be found [here](https://www.youtube.com/watch?v=XDAcQNUuT84).
 ![thumbnail](https://user-images.githubusercontent.com/45726273/126563920-193ca8df-de70-4a91-81ec-d781ee961332.png)
 
 ## Installation

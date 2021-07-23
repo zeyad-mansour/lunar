@@ -73,7 +73,7 @@ class Aimbot:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
             print(colored("[!] Check your PyTorch installation, else performance will be very poor", "red"))
 
-        self.model.conf = 0.48 # base confidence threshold (or base detection (0-1)
+        self.model.conf = 0.45 # base confidence threshold (or base detection (0-1)
         self.model.iou = 0.45 # NMS IoU (0-1)
         self.collect_data = collect_data
         self.mouse_delay = mouse_delay
@@ -161,14 +161,14 @@ class Aimbot:
             results = self.model(frame)
 
             if len(results.xyxy[0]) != 0: #player detected
-                least_crosshair_dist = closest_detection = None
+                least_crosshair_dist = closest_detection = player_in_frame = None
                 for *box, conf, cls in results.xyxy[0]: #iterate over each player detected
                     x1y1 = [int(x.item()) for x in box[:2]]
                     x2y2 = [int(x.item()) for x in box[2:]]
                     x1, y1, x2, y2, conf = *x1y1, *x2y2, conf.item()
                     height = y2 - y1
-                    relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.7) #offset to roughly approximate the head using a ratio of the height
-                    is_own_player = x1 < 15 or (x1 < self.box_constant/5 and y2 > self.box_constant/1.2) #helps ensure that your own player is not regarded as a valid detection
+                    relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.35) #offset to roughly approximate the head using a ratio of the height
+                    is_own_player = player_in_frame = x1 < 15 or (x1 < self.box_constant/5 and y2 > self.box_constant/1.2) #helps ensure that your own player is not regarded as a valid detection
 
                     #calculate the distance between each detection and the crosshair at (self.box_constant/2, self.box_constant/2)
                     crosshair_dist = math.dist((relative_head_X, relative_head_Y), (self.box_constant/2, self.box_constant/2))
@@ -201,7 +201,7 @@ class Aimbot:
                     else:
                         cv2.putText(frame, "TARGETING", (x1 + 40, y1), cv2.FONT_HERSHEY_DUPLEX, 0.5, (115, 113, 244), 2) #draw the confidence labels on the bounding boxes
 
-                    if self.collect_data and time.perf_counter() - collect_pause > 1 and targeted: #screenshots can only be taken every 1 second
+                    if self.collect_data and time.perf_counter() - collect_pause > 1 and targeted and not player_in_frame: #screenshots can only be taken every 1 second
                         if set_collect_delay:
                             collect_delay = time.perf_counter()
                             set_collect_delay = False
