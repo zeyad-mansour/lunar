@@ -49,6 +49,7 @@ def setup():
 
 if __name__ == "__main__":
     os.system('cls' if os.name == 'nt' else 'clear')
+    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
     print(colored('''
     | |

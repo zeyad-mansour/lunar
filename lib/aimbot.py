@@ -5,7 +5,6 @@ import math
 import mss
 import numpy as np
 import os
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 import sys
 import time
