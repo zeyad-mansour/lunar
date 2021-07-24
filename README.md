@@ -24,13 +24,13 @@ pip install -r requirements.txt
 ```           
 python lunar.py
 ```
-To update sensitivity settings:
-```           
-python lunar.py setup
-```
 When using a controller (assuming L2 is bound to targeting):
 ```           
 python lunar.py controller
+```
+To update sensitivity settings:
+```           
+python lunar.py setup
 ```
 To collect image data for annotating and training:
 ```           
