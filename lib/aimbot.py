@@ -145,12 +145,12 @@ class Aimbot:
             x, y = round(unit_x * k - sum_x), round(unit_y * k - sum_y)
             yield x, y
 
-    def L2_down(self):
+    def is_L2_pressed(self):
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.JOYBUTTONDOWN:
                 return self.controller.get_button(6)
-            return False
+        return False
 
     def start(self):
         print("[INFO] Beginning screen capture")
@@ -197,7 +197,7 @@ class Aimbot:
                         is_own_player = False
 
                 if self.controller:
-                    targeted = Aimbot.L2_down(self)
+                    targeted = Aimbot.is_L2_pressed(self)
                 else:
                     targeted = True if win32api.GetKeyState(0x02) in (-127, -128) else False #checks if right mouse button is being held down
 
