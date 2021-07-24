@@ -101,7 +101,7 @@ class Aimbot:
         Aimbot.sleep(0.0001)
         ctypes.windll.user32.mouse_event(0x0004) #left mouse up
 
-    def L2_down():
+    def L2_down(self):
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.JOYBUTTONDOWN:
@@ -197,7 +197,7 @@ class Aimbot:
                         is_own_player = False
 
                 if self.controller:
-                    targeted = Aimbot.L2_down()
+                    targeted = Aimbot.L2_down(self)
                 else:
                     targeted = True if win32api.GetKeyState(0x02) in (-127, -128) else False #checks if right mouse button is being held down
 
