@@ -5,7 +5,6 @@ import math
 import mss
 import numpy as np
 import os
-import pygame
 import sys
 import time
 import torch
@@ -54,9 +53,6 @@ class Aimbot:
     ii_ = Input_I()
     screen = mss.mss()
     pixel_increment = 1 #controls how many pixels the mouse moves for each relative movement
-    pygame.init()
-    j = pygame.joystick.Joystick(0)
-    j.init()
     with open("lib/config/config.json") as f:
         sens_config = json.load(f)
     aimbot_status = colored("ENABLED", 'green')
@@ -82,7 +78,14 @@ class Aimbot:
         self.collect_data = collect_data
         self.mouse_delay = mouse_delay
         self.debug = debug
-        self.controller = controller
+        if controller:
+            os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+            import pygame
+            pygame.init()
+            self.controller = pygame.joystick.Joystick(0)
+            self.controller.init()
+        else:
+            self.controller = False
 
         print("\n[INFO] PRESS 'F1' TO TOGGLE AIMBOT\n[INFO] PRESS 'F2' TO QUIT")
 
@@ -103,7 +106,7 @@ class Aimbot:
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.JOYBUTTONDOWN:
-                return Aimbot.j.get_button(6)
+                return self.controller.get_button(6)
             return False
 
     def sleep(duration, get_now = time.perf_counter):
