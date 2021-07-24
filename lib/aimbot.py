@@ -5,6 +5,8 @@ import math
 import mss
 import numpy as np
 import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+import pygame
 import sys
 import time
 import torch
@@ -79,8 +81,6 @@ class Aimbot:
         self.mouse_delay = mouse_delay
         self.debug = debug
         if controller:
-            os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
-            import pygame
             pygame.init()
             self.controller = pygame.joystick.Joystick(0)
             self.controller.init()
@@ -103,9 +103,9 @@ class Aimbot:
         ctypes.windll.user32.mouse_event(0x0004) #left mouse up
 
     def L2_down():
-        events = Aimbot.pygame.event.get()
+        events = pygame.event.get()
         for event in events:
-            if event.type == Aimbot.pygame.JOYBUTTONDOWN:
+            if event.type == pygame.JOYBUTTONDOWN:
                 return self.controller.get_button(6)
             return False
 
