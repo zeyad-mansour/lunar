@@ -101,13 +101,6 @@ class Aimbot:
         Aimbot.sleep(0.0001)
         ctypes.windll.user32.mouse_event(0x0004) #left mouse up
 
-    def L2_down(self):
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.JOYBUTTONDOWN:
-                return self.controller.get_button(6)
-            return False
-
     def sleep(duration, get_now = time.perf_counter):
         if duration == 0: return
         now = get_now()
@@ -151,6 +144,13 @@ class Aimbot:
             sum_y += y
             x, y = round(unit_x * k - sum_x), round(unit_y * k - sum_y)
             yield x, y
+
+    def L2_down(self):
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.JOYBUTTONDOWN:
+                return self.controller.get_button(6)
+            return False
 
     def start(self):
         print("[INFO] Beginning screen capture")
