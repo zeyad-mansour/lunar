@@ -103,9 +103,9 @@ class Aimbot:
         ctypes.windll.user32.mouse_event(0x0004) #left mouse up
 
     def L2_down():
-        events = pygame.event.get()
+        events = Aimbot.pygame.event.get()
         for event in events:
-            if event.type == pygame.JOYBUTTONDOWN:
+            if event.type == Aimbot.pygame.JOYBUTTONDOWN:
                 return self.controller.get_button(6)
             return False
 
