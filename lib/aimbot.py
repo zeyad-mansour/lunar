@@ -103,7 +103,7 @@ class Aimbot:
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.JOYBUTTONDOWN:
-                return Aimbot.j.get_button(6):
+                return Aimbot.j.get_button(6)
             return False
 
     def sleep(duration, get_now = time.perf_counter):
