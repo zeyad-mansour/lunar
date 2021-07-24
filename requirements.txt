@@ -15,8 +15,9 @@ seaborn>=0.11.0
 pandas
 
 mss
-pywin32
+pygame
 pynput
+pywin32
 requests
 wheel
 termcolor

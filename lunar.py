@@ -18,7 +18,7 @@ def on_release(key):
 
 def main():
     global lunar
-    lunar = Aimbot(collect_data = "collect_data" in sys.argv)
+    lunar = Aimbot(collect_data = "collect_data" in sys.argv, controller = "controller" in sys.argv)
     lunar.start()
 
 def setup():

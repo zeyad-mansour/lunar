@@ -28,6 +28,10 @@ To update sensitivity settings:
 ```           
 python lunar.py setup
 ```
+When using a controller (assuming L2 is bound to targeting):
+```           
+python lunar.py controller
+```
 To collect image data for annotating and training:
 ```           
 python lunar.py collect_data
@@ -42,7 +46,7 @@ If you have image data with or without annotations, please send that in a zip fi
 
 ## Future Updates
 - [x] Train a model on a custom dataset
-- [ ] Implement better player tracking with controller support
+- [ ] Implement better player tracking
 - [ ] Add support for other FPS games (e.g. Valorant, Warzone)
 - [ ] Use TensorRT for faster inference
 - [ ] Make an easy-to-use GUI

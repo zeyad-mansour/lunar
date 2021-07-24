@@ -5,6 +5,7 @@ import math
 import mss
 import numpy as np
 import os
+import pygame
 import sys
 import time
 import torch
@@ -53,11 +54,14 @@ class Aimbot:
     ii_ = Input_I()
     screen = mss.mss()
     pixel_increment = 1 #controls how many pixels the mouse moves for each relative movement
+    pygame.init()
+    j = pygame.joystick.Joystick(0)
+    j.init()
     with open("lib/config/config.json") as f:
         sens_config = json.load(f)
     aimbot_status = colored("ENABLED", 'green')
 
-    def __init__(self, box_constant = 416, collect_data = False, mouse_delay = 0.0001, debug = False):
+    def __init__(self, box_constant = 416, collect_data = False, mouse_delay = 0.0001, debug = False, controller = False):
         #controls the initial centered box width and height of the "Lunar Vision" window
         self.box_constant = box_constant #controls the size of the detection box (equaling the width and height)
 
@@ -78,6 +82,7 @@ class Aimbot:
         self.collect_data = collect_data
         self.mouse_delay = mouse_delay
         self.debug = debug
+        self.controller = controller
 
         print("\n[INFO] PRESS 'F1' TO TOGGLE AIMBOT\n[INFO] PRESS 'F2' TO QUIT")
 
@@ -93,6 +98,13 @@ class Aimbot:
         ctypes.windll.user32.mouse_event(0x0002) #left mouse down
         Aimbot.sleep(0.0001)
         ctypes.windll.user32.mouse_event(0x0004) #left mouse up
+
+    def L2_down():
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.JOYBUTTONDOWN:
+                return Aimbot.j.get_button(6):
+            return False
 
     def sleep(duration, get_now = time.perf_counter):
         if duration == 0: return
@@ -182,7 +194,10 @@ class Aimbot:
                     else:
                         is_own_player = False
 
-                targeted = True if win32api.GetKeyState(0x02) in (-127, -128) else False #checks if right mouse button is being held down
+                if self.controller:
+                    targeted = Aimbot.L2_down()
+                else:
+                    targeted = True if win32api.GetKeyState(0x02) in (-127, -128) else False #checks if right mouse button is being held down
 
                 if closest_detection: #if valid detection exists
                     cv2.circle(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), 5, (115, 244, 113), -1) #draw circle on the head
