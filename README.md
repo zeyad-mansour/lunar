@@ -11,8 +11,7 @@ A demo video (outdated) can be found [here](https://www.youtube.com/watch?v=XDAc
 ![thumbnail](https://user-images.githubusercontent.com/45726273/126563920-193ca8df-de70-4a91-81ec-d781ee961332.png)
 
 ## Important Notice
-I have sold a closed-source version of this project and will no longer be updating this repo. It is now being run by [Lunar Enhancements](https://www.lunarenhance.com). Refer to [lunarenhance@gmail.com](mailto:lunarenhance@gmail.com) for inquries.
-
+I have sold a closed-source version of this project and will no longer be updating this repo. It is now being run by [Lunar Enhancements](https://www.lunarenhance.com).
 ## Installation
 
 1. Install a version of [Python](https://www.python.org/downloads/) 3.8 or later.
