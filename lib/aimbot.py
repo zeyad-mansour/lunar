@@ -5,7 +5,6 @@ import math
 import mss
 import numpy as np
 import os
-import pygame
 import sys
 import time
 import torch
@@ -53,12 +52,12 @@ class Aimbot:
     extra = ctypes.c_ulong(0)
     ii_ = Input_I()
     screen = mss.mss()
-    pixel_increment = 1 #controls how many pixels the mouse moves for each relative movement
+    pixel_increment = 4 #controls how many pixels the mouse moves for each relative movement
     with open("lib/config/config.json") as f:
         sens_config = json.load(f)
     aimbot_status = colored("ENABLED", 'green')
 
-    def __init__(self, box_constant = 416, collect_data = False, mouse_delay = 0.0001, debug = False, controller = False):
+    def __init__(self, box_constant = 416, collect_data = False, mouse_delay = 0.0001, debug = False):
         #controls the initial centered box width and height of the "Lunar Vision" window
         self.box_constant = box_constant #controls the size of the detection box (equaling the width and height)
 
@@ -74,17 +73,11 @@ class Aimbot:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
             print(colored("[!] Check your PyTorch installation, else performance will be very poor", "red"))
 
-        self.model.conf = 0.55 # base confidence threshold (or base detection (0-1)
+        self.model.conf = 0.45 # base confidence threshold (or base detection (0-1)
         self.model.iou = 0.45 # NMS IoU (0-1)
         self.collect_data = collect_data
         self.mouse_delay = mouse_delay
         self.debug = debug
-        if controller:
-            pygame.init()
-            self.controller = pygame.joystick.Joystick(0)
-            self.controller.init()
-        else:
-            self.controller = False
 
         print("\n[INFO] PRESS 'F1' TO TOGGLE AIMBOT\n[INFO] PRESS 'F2' TO QUIT")
 
@@ -108,13 +101,19 @@ class Aimbot:
         while now < end:
             now = get_now()
 
+    def is_aimbot_enabled():
+        return True if Aimbot.aimbot_status == colored("ENABLED", 'green') else False
+
+    def is_targeted():
+        return True if win32api.GetKeyState(0x02) in (-127, -128) else False
+
     def is_target_locked(x, y):
         #plus/minus 5 pixel threshold
         threshold = 5
         return True if 960 - threshold <= x <= 960 + threshold and 540 - threshold <= y <= 540 + threshold else False
 
-    def move_crosshair(self, x, y, targeted):
-        if targeted:
+    def move_crosshair(self, x, y):
+        if Aimbot.is_targeted():
             scale = Aimbot.sens_config["targeting_scale"]
         else:
             return #TODO
@@ -144,13 +143,7 @@ class Aimbot:
             sum_y += y
             x, y = round(unit_x * k - sum_x), round(unit_y * k - sum_y)
             yield x, y
-
-    def is_L2_pressed(self):
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.JOYBUTTONDOWN:
-                return self.controller.get_button(6)
-        return False
+            
 
     def start(self):
         print("[INFO] Beginning screen capture")
@@ -163,48 +156,44 @@ class Aimbot:
                           'height': int(self.box_constant)} #height of the box
         if self.collect_data:
             collect_pause = 0
-            set_collect_delay = True
 
         while True:
             start_time = time.perf_counter()
             frame = np.array(Aimbot.screen.grab(detection_box))
-            if self.collect_data: orig_frame = np.copy(frame)
+            if self.collect_data: orig_frame = np.copy((frame))
             results = self.model(frame)
 
             if len(results.xyxy[0]) != 0: #player detected
-                least_crosshair_dist = closest_detection = player_in_frame = None
+                least_crosshair_dist = closest_detection = player_in_frame = False
                 for *box, conf, cls in results.xyxy[0]: #iterate over each player detected
                     x1y1 = [int(x.item()) for x in box[:2]]
                     x2y2 = [int(x.item()) for x in box[2:]]
                     x1, y1, x2, y2, conf = *x1y1, *x2y2, conf.item()
                     height = y2 - y1
                     relative_head_X, relative_head_Y = int((x1 + x2)/2), int((y1 + y2)/2 - height/2.7) #offset to roughly approximate the head using a ratio of the height
-                    is_own_player = player_in_frame = x1 < 15 or (x1 < self.box_constant/5 and y2 > self.box_constant/1.2) #helps ensure that your own player is not regarded as a valid detection
+                    own_player = x1 < 15 or (x1 < self.box_constant/5 and y2 > self.box_constant/1.2) #helps ensure that your own player is not regarded as a valid detection
 
                     #calculate the distance between each detection and the crosshair at (self.box_constant/2, self.box_constant/2)
                     crosshair_dist = math.dist((relative_head_X, relative_head_Y), (self.box_constant/2, self.box_constant/2))
 
                     if not least_crosshair_dist: least_crosshair_dist = crosshair_dist #initalize least crosshair distance variable first iteration
 
-                    if crosshair_dist <= least_crosshair_dist and not is_own_player:
+                    if crosshair_dist <= least_crosshair_dist and not own_player:
                         least_crosshair_dist = crosshair_dist
                         closest_detection = {"x1y1": x1y1, "x2y2": x2y2, "relative_head_X": relative_head_X, "relative_head_Y": relative_head_Y, "conf": conf}
 
-                    if not is_own_player:
+                    if not own_player:
                         cv2.rectangle(frame, x1y1, x2y2, (244, 113, 115), 2) #draw the bounding boxes for all of the player detections (except own)
                         cv2.putText(frame, f"{int(conf * 100)}%", x1y1, cv2.FONT_HERSHEY_DUPLEX, 0.5, (244, 113, 116), 2) #draw the confidence labels on the bounding boxes
                     else:
-                        is_own_player = False
-
-                if self.controller:
-                    targeted = Aimbot.is_L2_pressed(self)
-                else:
-                    targeted = True if win32api.GetKeyState(0x02) in (-127, -128) else False #checks if right mouse button is being held down
+                        own_player = False
+                        if not player_in_frame:
+                            player_in_frame = True
 
                 if closest_detection: #if valid detection exists
                     cv2.circle(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), 5, (115, 244, 113), -1) #draw circle on the head
 
-                    #draw line (tracer) from the crosshair to the head
+                    #draw line from the crosshair to the head
                     cv2.line(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), (self.box_constant//2, self.box_constant//2), (244, 242, 113), 2)
 
                     absolute_head_X, absolute_head_Y = closest_detection["relative_head_X"] + detection_box['left'], closest_detection["relative_head_Y"] + detection_box['top']
@@ -215,17 +204,13 @@ class Aimbot:
                     else:
                         cv2.putText(frame, "TARGETING", (x1 + 40, y1), cv2.FONT_HERSHEY_DUPLEX, 0.5, (115, 113, 244), 2) #draw the confidence labels on the bounding boxes
 
-                    if self.collect_data and time.perf_counter() - collect_pause > 1 and targeted and not player_in_frame: #screenshots can only be taken every 1 second
-                        if set_collect_delay:
-                            collect_delay = time.perf_counter()
-                            set_collect_delay = False
-                        if time.perf_counter() - collect_delay > 0.5: #ensures that player has been targeting for at least 0.5 seconds
-                            cv2.imwrite(f"lib/data/{str(uuid.uuid4())}.jpg", orig_frame)
-                            collect_pause = collect_delay = time.perf_counter()
+                    if Aimbot.is_aimbot_enabled():
+                        Aimbot.move_crosshair(self, absolute_head_X, absolute_head_Y)
 
-                    if Aimbot.aimbot_status == colored("ENABLED", 'green'):
-                        Aimbot.move_crosshair(self, absolute_head_X, absolute_head_Y, targeted)
-
+            if self.collect_data and time.perf_counter() - collect_pause > 1 and Aimbot.is_targeted() and Aimbot.is_aimbot_enabled() and not player_in_frame: #screenshots can only be taken every 1 second
+                cv2.imwrite(f"lib/data/{str(uuid.uuid4())}.jpg", orig_frame)
+                collect_pause = time.perf_counter()
+            
             cv2.putText(frame, f"FPS: {int(1/(time.perf_counter() - start_time))}", (5, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (113, 116, 244), 2)
             cv2.imshow("Lunar Vision", frame)
             if cv2.waitKey(1) & 0xFF == ord('0'):
@@ -233,8 +218,7 @@ class Aimbot:
 
     def clean_up():
         print("\n[INFO] F2 WAS PRESSED. QUITTING...")
-        cv2.destroyAllWindows()
         Aimbot.screen.close()
-        os._exit(1)
+        os._exit(0)
 
 if __name__ == "__main__": print("You are in the wrong directory and are running the wrong file; you must run lunar.py")
