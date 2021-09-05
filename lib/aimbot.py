@@ -62,7 +62,7 @@ class Aimbot:
         self.box_constant = box_constant #controls the size of the detection box (equaling the width and height)
 
         print("[INFO] Loading the neural network model")
-        self.model = torch.hub.load('ultralytics/yolov5', 'custom', path='lib/best.pt')
+        self.model = torch.hub.load('ultralytics/yolov5', 'custom', path='lib/best.pt', force_reload = True)
         if torch.cuda.is_available():
             if "16" in torch.cuda.get_device_name(torch.cuda.current_device()): #known error with the 1650 GPUs where detection doesn't work
                 print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE (ISSUE WITH 1650/1660 GPUs)", "red"))
