@@ -51,3 +51,6 @@ python lunar.py collect_data
 ## Contributing
 Pull requests are welcome. If you have any suggestions, questions, or find any issues, please open an [issue](https://github.com/zeyad-mansour/Lunar/issues) and provide some detail.
 If you find this project interesting or helpful, please star the repository.
+
+## License
+This project is distributed under [GNU General Public License v3.0](https://github.com/zeyad-mansour/Lunar/blob/main/LICENSE) license.
