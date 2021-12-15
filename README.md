@@ -39,13 +39,6 @@ python lunar.py collect_data
 - The model is trained on a dataset of Fortnite players, and it will not work well for other games. False positives can also happen under certain lighting conditions.
 - There is a known issue that occurs with PyTorch and the GeForce 16 series GPUs on Windows. Unfortunately, if you are using one of these GPUs, the aimbot will not work for you.
 
-## Future Updates
-- [x] Train a model on a custom dataset
-- [ ] Implement better player tracking
-- [ ] Add support for other FPS games (e.g. Valorant, Warzone)
-- [ ] Use TensorRT for faster inference
-- [ ] Make an easy-to-use GUI
-
 ## Contributing
 Pull requests are welcome. If you have any suggestions, questions, or find any issues, please open an [issue](https://github.com/zeyad-mansour/Lunar/issues) and provide some detail.
 If you find this project interesting or helpful, please star the repository.
