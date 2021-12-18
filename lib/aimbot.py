@@ -10,6 +10,7 @@ import time
 import torch
 import uuid
 import win32api
+import winsound
 
 from termcolor import colored
 
@@ -85,6 +86,9 @@ class Aimbot:
         if Aimbot.aimbot_status == colored("ENABLED", 'green'):
             Aimbot.aimbot_status = colored("DISABLED", 'red')
         else:
+            duration = 100  # milliseconds
+            freq = 440  # Hz
+            winsound.Beep(freq, duration)            
             Aimbot.aimbot_status = colored("ENABLED", 'green')
         sys.stdout.write("\033[K")
         print(f"[!] AIMBOT IS [{Aimbot.aimbot_status}]", end = "\r")
