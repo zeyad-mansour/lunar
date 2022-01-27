@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+pip install git+https: //github.com/XanaduAI/strawberryfields.git#egg=strawberryfieldse7
         {
             "name": "Launch Program",
             "program": "${workspaceFolder}/app.js",
