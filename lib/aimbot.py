@@ -10,6 +10,7 @@ import time
 import torch
 import uuid
 import win32api
+import _thread
 
 from termcolor import colored
 
@@ -57,7 +58,7 @@ class Aimbot:
         sens_config = json.load(f)
     aimbot_status = colored("ENABLED", 'green')
 
-    def __init__(self, box_constant = 416, collect_data = False, mouse_delay = 0.0001, debug = False):
+    def __init__(self, box_constant = 800, collect_data = False, mouse_delay = 0.0001, debug = False):
         #controls the initial centered box width and height of the "Lunar Vision" window
         self.box_constant = box_constant #controls the size of the detection box (equaling the width and height)
 
@@ -118,40 +119,27 @@ class Aimbot:
         else:
             return #TODO
 
-        if self.debug: start_time = time.perf_counter()
-        for rel_x, rel_y in Aimbot.interpolate_coordinates_from_center((x, y), scale):
-            Aimbot.ii_.mi = MouseInput(rel_x, rel_y, 0, 0x0001, 0, ctypes.pointer(Aimbot.extra))
-            input_obj = Input(ctypes.c_ulong(0), Aimbot.ii_)
-            ctypes.windll.user32.SendInput(1, ctypes.byref(input_obj), ctypes.sizeof(input_obj))
-            if not self.debug: Aimbot.sleep(self.mouse_delay) #time.sleep is not accurate enough
-        if self.debug: #remove this later
-            print(f"TIME: {time.perf_counter() - start_time}")
-            print("DEBUG: SLEEPING FOR 1 SECOND")
-            time.sleep(1)
+        #smooth coordinates and 
+        SmoothingFactor = 0.1 #value closer to 1 means slower movement.
+        if SmoothingFactor < 1:
+            SmoothingFactor = 1
+        CenterDifX = x - (1920 / 2)
+        CenterDifY = y - (1080 / 2)
+        MouseMovementX = round(CenterDifX / SmoothingFactor)
+        MouseMovementY = round(CenterDifY / SmoothingFactor)
 
-    #generator yields pixel tuples for relative movement
-    def interpolate_coordinates_from_center(absolute_coordinates, scale):
-        diff_x = (absolute_coordinates[0] - 960) * scale/Aimbot.pixel_increment
-        diff_y = (absolute_coordinates[1] - 540) * scale/Aimbot.pixel_increment
-        length = int(math.dist((0,0), (diff_x, diff_y)))
-        if length == 0: return
-        unit_x = (diff_x/length) * Aimbot.pixel_increment
-        unit_y = (diff_y/length) * Aimbot.pixel_increment
-        x = y = sum_x = sum_y = 0
-        for k in range(0, length):
-            sum_x += x
-            sum_y += y
-            x, y = round(unit_x * k - sum_x), round(unit_y * k - sum_y)
-            yield x, y
-            
+        #now actually move the mouse there
+        Aimbot.ii_.mi = MouseInput(MouseMovementX, MouseMovementY, 0, 0x0001, 0, ctypes.pointer(Aimbot.extra))
+        input_obj = Input(ctypes.c_ulong(0), Aimbot.ii_)
+        ctypes.windll.user32.SendInput(1, ctypes.byref(input_obj), ctypes.sizeof(input_obj))            
 
     def start(self):
         print("[INFO] Beginning screen capture")
         Aimbot.update_status_aimbot()
         half_screen_width = ctypes.windll.user32.GetSystemMetrics(0)/2 #this should always be 960
         half_screen_height = ctypes.windll.user32.GetSystemMetrics(1)/2 #this should always be 540
-        detection_box = {'left': int(half_screen_width - self.box_constant//2), #x1 coord (for top-left corner of the box)
-                          'top': int(half_screen_height - self.box_constant//2), #y1 coord (for top-left corner of the box)
+        detection_box = {'left': int(half_screen_width - self.box_constant/2), #x1 coord (for top-left corner of the box)
+                          'top': int(half_screen_height - self.box_constant/2), #y1 coord (for top-left corner of the box)
                           'width': int(self.box_constant),  #width of the box
                           'height': int(self.box_constant)} #height of the box
         if self.collect_data:
@@ -183,29 +171,30 @@ class Aimbot:
                         closest_detection = {"x1y1": x1y1, "x2y2": x2y2, "relative_head_X": relative_head_X, "relative_head_Y": relative_head_Y, "conf": conf}
 
                     if not own_player:
-                        cv2.rectangle(frame, x1y1, x2y2, (244, 113, 115), 2) #draw the bounding boxes for all of the player detections (except own)
-                        cv2.putText(frame, f"{int(conf * 100)}%", x1y1, cv2.FONT_HERSHEY_DUPLEX, 0.5, (244, 113, 116), 2) #draw the confidence labels on the bounding boxes
+                        cv2.rectangle(frame, x1y1, x2y2, (244, 115, 115), 2) #draw the bounding boxes for all of the player detections (except own)
+                        cv2.putText(frame, f"{int(conf * 100)}%", x1y1, cv2.FONT_HERSHEY_DUPLEX, 0.5, (244, 115, 115), 2) #draw the confidence labels on the bounding boxes
                     else:
                         own_player = False
                         if not player_in_frame:
                             player_in_frame = True
 
                 if closest_detection: #if valid detection exists
-                    cv2.circle(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), 5, (115, 244, 113), -1) #draw circle on the head
+                    cv2.circle(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), 2, (255, 255, 255), -1) #draw circle on the head
 
                     #draw line from the crosshair to the head
-                    cv2.line(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), (self.box_constant//2, self.box_constant//2), (244, 242, 113), 2)
+                    cv2.line(frame, (closest_detection["relative_head_X"], closest_detection["relative_head_Y"]), (self.box_constant//2, self.box_constant//2), (100, 100, 100), 2)
 
                     absolute_head_X, absolute_head_Y = closest_detection["relative_head_X"] + detection_box['left'], closest_detection["relative_head_Y"] + detection_box['top']
 
                     x1, y1 = closest_detection["x1y1"]
                     if Aimbot.is_target_locked(absolute_head_X, absolute_head_Y):
-                        cv2.putText(frame, "LOCKED", (x1 + 40, y1), cv2.FONT_HERSHEY_DUPLEX, 0.5, (115, 244, 113), 2) #draw the confidence labels on the bounding boxes
+                        cv2.putText(frame, "LOCKED", (x1 + 40, y1), cv2.FONT_HERSHEY_DUPLEX, 0.5, (115, 244, 115), 2) #draw the confidence labels on the bounding boxes
                     else:
-                        cv2.putText(frame, "TARGETING", (x1 + 40, y1), cv2.FONT_HERSHEY_DUPLEX, 0.5, (115, 113, 244), 2) #draw the confidence labels on the bounding boxes
+                        cv2.putText(frame, "TARGETING", (x1 + 40, y1), cv2.FONT_HERSHEY_DUPLEX, 0.5, (115, 115, 244), 2) #draw the confidence labels on the bounding boxes
 
                     if Aimbot.is_aimbot_enabled():
-                        Aimbot.move_crosshair(self, absolute_head_X, absolute_head_Y)
+                        #move the mouse in a seperate thread, so that the object detection doesn't hang
+                        _thread.start_new_thread ( Aimbot.move_crosshair, (self, absolute_head_X, absolute_head_Y) )
 
             if self.collect_data and time.perf_counter() - collect_pause > 1 and Aimbot.is_targeted() and Aimbot.is_aimbot_enabled() and not player_in_frame: #screenshots can only be taken every 1 second
                 cv2.imwrite(f"lib/data/{str(uuid.uuid4())}.jpg", orig_frame)
