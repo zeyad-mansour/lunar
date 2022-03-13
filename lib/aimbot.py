@@ -64,14 +64,10 @@ class Aimbot:
         print("[INFO] Loading the neural network model")
         self.model = torch.hub.load('ultralytics/yolov5', 'custom', path='lib/best.pt', force_reload = True)
         if torch.cuda.is_available():
-            if "16" in torch.cuda.get_device_name(torch.cuda.current_device()): #known error with the 1650 GPUs where detection doesn't work
-                print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE (ISSUE WITH 1650/1660 GPUs)", "red"))
-                os._exit(1)
-            else:
-                print(colored("CUDA ACCELERATION [ENABLED]", "green"))
+            print(colored("CUDA ACCELERATION [ENABLED]", "green"))
         else:
             print(colored("[!] CUDA ACCELERATION IS UNAVAILABLE", "red"))
-            print(colored("[!] Check your PyTorch installation, else performance will be very poor", "red"))
+            print(colored("[!] Check your PyTorch installation, else performance will be poor", "red"))
 
         self.model.conf = 0.45 # base confidence threshold (or base detection (0-1)
         self.model.iou = 0.45 # NMS IoU (0-1)
