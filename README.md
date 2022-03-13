@@ -1,9 +1,9 @@
 # Lunar
-Lunar is a neural network aimbot that uses real-time object detection accelerated with CUDA on Nvidia GPUs.
+Lunar is a neural network aim assist that uses real-time object detection accelerated with CUDA on Nvidia GPUs.
 
 ## About
 
-Lunar can be modified to work with a variety of FPS games; however, it is currently configured for Fortnite. Besides being general purpose, the main advantage of using Lunar is that it is virtually undetectable by anti-cheat software (no memory is meddled with).
+Lunar can be modified to work with a variety of FPS games; however, it is currently configured for Fortnite. Besides being general purpose, the main advantage of using Lunar is that it does meddle with the memory of other processes.
 
 The basis of Lunar's player detection is the [YOLOv5](https://github.com/ultralytics/yolov5) architecture written in the PyTorch framework.
 
@@ -36,8 +36,7 @@ python lunar.py collect_data
 
 ## Issues
 - The method of mouse movement ([SendInput](https://github.com/zeyad-mansour/Lunar/blob/45e05373036f8bd072667313c155e55735cd7f57/lib/aimbot.py#L126)) is slow. For this reason, the crosshair often lags behind a moving detection. This problem can be lessened by increasing the [pixel_increment](https://github.com/zeyad-mansour/Lunar/blob/45e05373036f8bd072667313c155e55735cd7f57/lib/aimbot.py#L56) (e.g. to 4) so fewer calls to that function are made.
-- The model is trained on a dataset of Fortnite players, and it will not work well for other games. False positives can also happen under certain lighting conditions.
-- There is a known issue that occurs with PyTorch and the GeForce 16 series GPUs on Windows. Unfortunately, if you are using one of these GPUs, the aimbot will not work for you.
+- False positives can also happen under certain lighting conditions.
 
 ## Contributing
 Pull requests are welcome. If you have any suggestions, questions, or find any issues, please open an [issue](https://github.com/zeyad-mansour/Lunar/issues) and provide some detail.
