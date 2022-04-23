@@ -5,7 +5,7 @@ Lunar is a neural network aim assist that uses real-time object detection accele
 
 Lunar can be modified to work with a variety of FPS games; however, it is currently configured for Fortnite. Besides being general purpose, the main advantage of using Lunar is that it does meddle with the memory of other processes.
 
-The basis of Lunar's player detection is the [YOLOv5](https://github.com/ultralytics/yolov5) architecture written in the PyTorch framework.
+The basis of Lunar's player detection is the [YOLOv5](https://github.com/ultralytics/yolov5) architecture written in PyTorch.
 
 A demo video (outdated) can be found [here](https://www.youtube.com/watch?v=XDAcQNUuT84).
 
@@ -29,10 +29,12 @@ To update sensitivity settings:
 ```           
 python lunar.py setup
 ```
-To collect image data for annotating and training:
+To collect image data for [annotating](https://www.makesense.ai/) and training:
 ```           
 python lunar.py collect_data
 ```
+
+*If you have annotated training data, [email them to me](mailto:zeyadmansourfwrd@gmail.com) and I will match them back.*
 
 ## Issues
 - The method of mouse movement ([SendInput](https://github.com/zeyad-mansour/Lunar/blob/45e05373036f8bd072667313c155e55735cd7f57/lib/aimbot.py#L126)) is slow. For this reason, the crosshair often lags behind a moving detection. This problem can be lessened by increasing the [pixel_increment](https://github.com/zeyad-mansour/Lunar/blob/45e05373036f8bd072667313c155e55735cd7f57/lib/aimbot.py#L56) (e.g. to 4) so fewer calls to that function are made.
